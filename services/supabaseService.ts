@@ -2,8 +2,9 @@ import { createClient, User } from '@supabase/supabase-js';
 import { Question, Category, Difficulty } from '../types';
 import { SEED_QUESTIONS } from '../data/seedQuestions';
 
+
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 export const supabase = (supabaseUrl && supabaseKey) 
   ? createClient(supabaseUrl, supabaseKey) 
