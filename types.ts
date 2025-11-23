@@ -1,12 +1,12 @@
 export enum Category {
-  VERBAL = 'Verbal Reasoning',
-  QUANT = 'Quantitative Reasoning'
+  VERBAL = 'VERBAL',
+  QUANT = 'QUANT'
 }
 
 export enum Difficulty {
-  EASY = 'Easy',
-  MEDIUM = 'Medium',
-  HARD = 'Hard'
+  EASY = 'EASY',
+  MEDIUM = 'MEDIUM',
+  HARD = 'HARD'
 }
 
 export interface Question {

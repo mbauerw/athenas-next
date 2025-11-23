@@ -3,13 +3,13 @@ import { Library, BookOpen, TrendingUp, GraduationCap, AlertTriangle, RefreshCw,
 import { User } from '@supabase/supabase-js';
 import { Category, Difficulty, Question, UserProgress, MAX_QUESTIONS_PER_LEVEL } from './types';
 import { generateQuestion } from './services/geminiService';
-import { 
-  initializeUser, 
-  startSession, 
-  saveQuestionToDb, 
-  saveUserAnswer, 
-  supabase, 
-  signOut, 
+import {
+  initializeUser,
+  startSession,
+  saveQuestionToDb,
+  saveUserAnswer,
+  supabase,
+  signOut,
   syncAuthUser,
   getUnansweredQuestion,
   seedDatabase
@@ -19,6 +19,8 @@ import { ProgressBar } from './components/ProgressBar';
 import { QuestionCard } from './components/QuestionCard';
 import { TutorChat } from './components/TutorChat';
 import { AuthScreen } from './components/AuthScreen';
+import { NavBar } from './components/NavBar';
+import { Footer } from './components/Footer';
 
 // --- Initial State ---
 const initialProgress: UserProgress = {
@@ -34,7 +36,7 @@ const App: React.FC = () => {
   const [progress, setProgress] = useState<UserProgress>(initialProgress);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
-  
+
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +57,7 @@ const App: React.FC = () => {
     const initDb = async () => {
       if (!supabase) return;
       setDbConnected(true);
-      
+
       // 0. Seed Database with initial content
       await seedDatabase();
 
@@ -83,7 +85,7 @@ const App: React.FC = () => {
         subscription.unsubscribe();
       };
     };
-    
+
     initDb();
   }, []);
 
@@ -92,7 +94,7 @@ const App: React.FC = () => {
   const startPractice = async (category: Category, difficulty: Difficulty) => {
     setSelectedCategory(category);
     setSelectedDifficulty(difficulty);
-    
+
     if (userId && dbConnected) {
       const sid = await startSession(userId, category);
       setSessionId(sid);
@@ -120,7 +122,7 @@ const App: React.FC = () => {
       // 2. If no DB question found, generate new one (The "Oracle")
       console.log("Generating new question via AI");
       const question = await generateQuestion(category, difficulty);
-      
+
       // Persist Question so it becomes part of the archive
       if (userId && dbConnected) {
         const dbQId = await saveQuestionToDb(question);
@@ -145,7 +147,7 @@ const App: React.FC = () => {
     // Update Local Progress
     setProgress(prev => {
       const newProgress = { ...prev };
-      
+
       if (selectedCategory === Category.VERBAL) {
         const diffKey = selectedDifficulty.toLowerCase() as keyof typeof prev.verbal;
         if (newProgress.verbal[diffKey] < MAX_QUESTIONS_PER_LEVEL) {
@@ -160,13 +162,13 @@ const App: React.FC = () => {
 
       newProgress.totalAttempted++;
       if (isCorrect) newProgress.correctAnswers++;
-      
+
       return newProgress;
     });
 
     // Save Answer to DB
     if (userId && dbConnected && currentQuestion.dbId) {
-       await saveUserAnswer(userId, sessionId, currentQuestion.dbId, currentQuestion, selectedIndex);
+      await saveUserAnswer(userId, sessionId, currentQuestion.dbId, currentQuestion, selectedIndex);
     }
 
     // Fetch Next
@@ -202,24 +204,20 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
-      
       {/* --- Background Image for Homepage --- */}
-      {view === 'dashboard' && (
-        <div className="absolute top-0 left-0 w-full h-[66vh] z-0 overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1531988042231-d39a9cc12a9a?auto=format&fit=crop&q=80" 
-            alt="Haphazardly stacked books" 
-            className="w-full h-full object-cover opacity-25 sepia-[.3]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/40 via-library-paper/80 to-library-paper"></div>
-        </div>
-      )}
-      
+      {/* <div className="absolute top-0 left-0 w-full h-full z-0 overflow-hidden">
+        <img
+          src="/book-background.png"
+          alt="Library background"
+          className="w-full h-full object-fill opacity-90 sepia-[.1]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10"></div>
+      </div> */}
       {/* --- Navigation / Header --- */}
       <header className="bg-library-wood text-white shadow-lg sticky top-0 z-50 border-b-4 border-library-gold relative">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div 
-            className="flex items-center gap-3 cursor-pointer" 
+          <div
+            className="flex items-center gap-3 cursor-pointer"
             onClick={returnToDashboard}
           >
             <div className="bg-white p-2 rounded-full text-library-wood shadow-inner">
@@ -230,7 +228,8 @@ const App: React.FC = () => {
               <p className="text-xs text-library-paperDark opacity-80 uppercase tracking-widest">GRE Prep Archives</p>
             </div>
           </div>
-          
+          <NavBar></NavBar>
+
           <div className="flex items-center gap-4">
             {view === 'question' && (
               <Button variant="outline" onClick={returnToDashboard} className="text-white border-white hover:bg-white/20 text-sm py-2 px-4 hidden md:block">
@@ -258,15 +257,16 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
+      
 
       {/* --- Main Content --- */}
       <main className="flex-grow container mx-auto px-4 py-8 relative z-10">
         
         {view === 'auth' && (
           <div className="min-h-[60vh] flex items-center justify-center">
-            <AuthScreen 
-              onSuccess={() => setView('dashboard')} 
-              onCancel={() => setView('dashboard')} 
+            <AuthScreen
+              onSuccess={() => setView('dashboard')}
+              onCancel={() => setView('dashboard')}
             />
           </div>
         )}
@@ -280,14 +280,14 @@ const App: React.FC = () => {
                   Welcome, {authUser ? (authUser.user_metadata.first_name || 'Scholar') : 'Guest Scholar'}.
                 </h2>
                 <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
-                  The archives contain 300 adaptive questions. 
+                  The archives contain 300 adaptive questions.
                   {authUser ? " Your progress is being recorded in the university registry." : " Sign in to permanently save your progress across sessions."}
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-              
+
               {/* Verbal Section */}
               <div className="bg-white p-8 rounded-lg shadow-lg border-t-8 border-amber-700">
                 <div className="flex items-center gap-4 mb-6">
@@ -298,22 +298,22 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  <ProgressBar 
-                    label="Easy Collection" 
-                    current={progress.verbal.easy} 
-                    max={MAX_QUESTIONS_PER_LEVEL} 
+                  <ProgressBar
+                    label="Easy Collection"
+                    current={progress.verbal.easy}
+                    max={MAX_QUESTIONS_PER_LEVEL}
                     colorClass="bg-green-600"
                   />
-                  <ProgressBar 
-                    label="Medium Collection" 
-                    current={progress.verbal.medium} 
-                    max={MAX_QUESTIONS_PER_LEVEL} 
+                  <ProgressBar
+                    label="Medium Collection"
+                    current={progress.verbal.medium}
+                    max={MAX_QUESTIONS_PER_LEVEL}
                     colorClass="bg-yellow-600"
                   />
-                  <ProgressBar 
-                    label="Hard Collection" 
-                    current={progress.verbal.hard} 
-                    max={MAX_QUESTIONS_PER_LEVEL} 
+                  <ProgressBar
+                    label="Hard Collection"
+                    current={progress.verbal.hard}
+                    max={MAX_QUESTIONS_PER_LEVEL}
                     colorClass="bg-red-700"
                   />
                 </div>
@@ -341,22 +341,22 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  <ProgressBar 
-                    label="Easy Collection" 
-                    current={progress.quant.easy} 
-                    max={MAX_QUESTIONS_PER_LEVEL} 
+                  <ProgressBar
+                    label="Easy Collection"
+                    current={progress.quant.easy}
+                    max={MAX_QUESTIONS_PER_LEVEL}
                     colorClass="bg-green-600"
                   />
-                  <ProgressBar 
-                    label="Medium Collection" 
-                    current={progress.quant.medium} 
-                    max={MAX_QUESTIONS_PER_LEVEL} 
+                  <ProgressBar
+                    label="Medium Collection"
+                    current={progress.quant.medium}
+                    max={MAX_QUESTIONS_PER_LEVEL}
                     colorClass="bg-yellow-600"
                   />
-                  <ProgressBar 
-                    label="Hard Collection" 
-                    current={progress.quant.hard} 
-                    max={MAX_QUESTIONS_PER_LEVEL} 
+                  <ProgressBar
+                    label="Hard Collection"
+                    current={progress.quant.hard}
+                    max={MAX_QUESTIONS_PER_LEVEL}
                     colorClass="bg-red-700"
                   />
                 </div>
@@ -375,7 +375,7 @@ const App: React.FC = () => {
               </div>
 
             </div>
-            
+
             {/* Overall Stats */}
             <div className="max-w-5xl mx-auto mt-8 bg-library-wood text-library-paper p-6 rounded-lg shadow-md flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -387,8 +387,8 @@ const App: React.FC = () => {
               </div>
               <div className="text-right">
                 <div className="text-3xl font-bold font-serif">
-                  {progress.totalAttempted > 0 
-                    ? Math.round((progress.correctAnswers / progress.totalAttempted) * 100) 
+                  {progress.totalAttempted > 0
+                    ? Math.round((progress.correctAnswers / progress.totalAttempted) * 100)
                     : 0}%
                 </div>
                 <p className="text-sm opacity-80">Accuracy Rate</p>
@@ -420,9 +420,9 @@ const App: React.FC = () => {
               </div>
             ) : currentQuestion ? (
               <>
-                <QuestionCard 
-                  question={currentQuestion} 
-                  onNext={handleQuestionComplete} 
+                <QuestionCard
+                  question={currentQuestion}
+                  onNext={handleQuestionComplete}
                 />
                 {/* Tutor Chat Integration */}
                 <TutorChat question={currentQuestion} />
@@ -430,8 +430,9 @@ const App: React.FC = () => {
             ) : null}
           </div>
         )}
-
+      
       </main>
+      <Footer />
     </div>
   );
 };

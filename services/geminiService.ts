@@ -1,5 +1,11 @@
 import { GoogleGenAI, Type, Schema, Chat } from "@google/genai";
 import { Category, Difficulty, Question } from "../types";
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
+
 
 const getClient = () => {
   const apiKey = process.env.API_KEY;
@@ -41,58 +47,83 @@ export const generateQuestion = async (
   category: Category,
   difficulty: Difficulty
 ): Promise<Question> => {
-  const ai = getClient();
-  
-  let promptText = "";
-  
-  if (category === Category.VERBAL) {
-    promptText = `Generate a ${difficulty} level GRE Verbal Reasoning question. 
+
+  const { data, error } = await supabase.rpc('get_random_question', {
+    p_category: category,      // Use the category from your function params
+    p_difficulty: difficulty   // Use the difficulty from your function params
+  })
+
+  console.log("Data is : ", data);
+
+  if (error || !data || data.length === 0) {
+    const ai = getClient();
+
+    let promptText = "";
+
+    if (category === Category.VERBAL) {
+      promptText = `Generate a ${difficulty} level GRE Verbal Reasoning question. 
     It can be Sentence Equivalence, Text Completion, or Reading Comprehension. 
     Ensure the vocabulary is appropriate for GRE level.`;
-  } else {
-    promptText = `Generate a ${difficulty} level GRE Quantitative Reasoning question.
+    } else {
+      promptText = `Generate a ${difficulty} level GRE Quantitative Reasoning question.
     It can be Arithmetic, Algebra, Geometry, or Data Analysis.
     Ensure the math is strictly text-based or uses standard unicode symbols for clarity.`;
-  }
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: promptText,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: questionSchema,
-        systemInstruction: "You are an expert GRE tutor. Generate high-quality, accurate practice questions similar to official ETS material.",
-      },
-    });
-
-    const text = response.text;
-    if (!text) {
-      throw new Error("No content generated from Gemini.");
     }
 
-    const jsonResponse = JSON.parse(text);
-    
-    return {
-      id: Date.now().toString(),
-      text: jsonResponse.text,
-      options: jsonResponse.options,
-      correctIndex: jsonResponse.correctIndex,
-      explanation: jsonResponse.explanation,
-      category,
-      difficulty,
-      topic: jsonResponse.topic || "General"
-    };
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: promptText,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: questionSchema,
+          systemInstruction: "You are an expert GRE tutor. Generate high-quality, accurate practice questions similar to official ETS material.",
+        },
+      });
 
-  } catch (error) {
-    console.error("Error generating question:", error);
-    throw error;
+      const text = response.text;
+      if (!text) {
+        throw new Error("No content generated from Gemini.");
+      }
+
+      const jsonResponse = JSON.parse(text);
+
+      return {
+        id: Date.now().toString(),
+        text: jsonResponse.text,
+        options: jsonResponse.options,
+        correctIndex: jsonResponse.correctIndex,
+        explanation: jsonResponse.explanation,
+        category,
+        difficulty,
+        topic: jsonResponse.topic || "General"
+      };
+
+    } catch (error) {
+      console.error("Error generating question:", error);
+      throw error;
+    }
+
   }
+
+  const dbQuestion = data[0]
+
+  return {
+    id: dbQuestion.id,
+    text: dbQuestion.text,
+    options: dbQuestion.options,
+    correctIndex: dbQuestion.correct_index,
+    explanation: dbQuestion.explanation,
+    category: dbQuestion.category,
+    difficulty: dbQuestion.difficulty,
+    topic: dbQuestion.topic || "General"
+  };
+
 };
 
 export const createTutorChat = (question: Question): Chat => {
   const ai = getClient();
-  
+
   const systemInstruction = `You are a wise and helpful GRE Tutor in a classic university library.
   The student is working on the following ${question.difficulty} ${question.category} question (Topic: ${question.topic}):
   
