@@ -253,11 +253,11 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
+    <div className="max-h-screen h-screen bg-library-paper flex flex-col font-sans text-library-ink relative overflow-y-auto">
       
       {/* --- Background Image for Homepage --- */}
       {view === 'dashboard' && (
-      <div>
+      <div className='max-h-screen overflow-hidden'>
         <motion.div 
           className="absolute top-[100vh] left-[2vw] w-full h-full z-0 overflow-hidden"
           {...floatingAnimation}
@@ -354,7 +354,7 @@ const App: React.FC = () => {
       
 
       {/* --- Main Content --- */}
-      <main className="flex-grow container mx-auto px-4 py-8 pb-32 relative z-10">
+      <main className="flex-grow container mx-auto px-4 py-8 pb-0 relative z-10">
         
         {view === 'auth' && (
           <div className="min-h-[60vh] flex items-center justify-center">
@@ -519,7 +519,7 @@ const App: React.FC = () => {
                   onNext={handleQuestionComplete}
                 />
                 {/* Tutor Chat Integration */}
-                <TutorChat question={currentQuestion} />
+                {/* <TutorChat question={currentQuestion} /> */}
               </>
             ) : null}
           </div>
@@ -527,6 +527,10 @@ const App: React.FC = () => {
       
       </main>
       <Footer />
+
+      {view === 'question' && currentQuestion && (
+        <TutorChat question={currentQuestion} />
+      )}
     </div>
   );
 };

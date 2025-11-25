@@ -73,7 +73,8 @@ export const TutorChat: React.FC<TutorChatProps> = ({ question }) => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-library-wood text-library-paper p-4 rounded-full shadow-2xl hover:bg-library-woodLight transition-all z-50 border-2 border-library-gold flex items-center gap-2"
+        style={{ zIndex: 9999 }}
+        className="fixed bottom-6 right-6 bg-library-wood text-library-paper p-4 rounded-full shadow-2xl hover:bg-library-woodLight transition-all border-2 border-library-gold flex items-center gap-2"
       >
         <MessageCircle size={24} />
         <span className="font-serif font-bold hidden md:inline">Ask Librarian</span>
@@ -82,7 +83,10 @@ export const TutorChat: React.FC<TutorChatProps> = ({ question }) => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-[90vw] md:w-[400px] h-[500px] bg-white rounded-lg shadow-2xl border-2 border-library-wood flex flex-col z-50 overflow-hidden animate-fade-in">
+    <div 
+      style={{ zIndex: 9999 }}
+      className="fixed bottom-6 right-6 w-[90vw] md:w-[400px] h-[500px] bg-white rounded-lg shadow-2xl border-2 border-library-wood flex flex-col overflow-hidden animate-fade-in"
+    >
       {/* Header */}
       <div className="bg-library-wood text-library-paper p-4 flex justify-between items-center border-b-4 border-library-gold">
         <div className="flex items-center gap-2">
