@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Library, BookOpen, TrendingUp, GraduationCap, AlertTriangle, RefreshCw, LogOut, UserCircle } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
+import { motion } from 'framer-motion';
 import { Category, Difficulty, Question, UserProgress, MAX_QUESTIONS_PER_LEVEL } from './types';
 import { generateQuestion } from './services/geminiService';
 import {
@@ -8,7 +9,6 @@ import {
   startSession,
   saveQuestionToDb,
   saveUserAnswer,
-  supabase,
   signOut,
   syncAuthUser,
   getUnansweredQuestion,
@@ -21,6 +21,7 @@ import { TutorChat } from './components/TutorChat';
 import { AuthScreen } from './components/AuthScreen';
 import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
+import { supabase } from '@/lib/supabase'
 
 // --- Initial State ---
 const initialProgress: UserProgress = {
@@ -28,6 +29,54 @@ const initialProgress: UserProgress = {
   quant: { easy: 0, medium: 0, hard: 0 },
   correctAnswers: 0,
   totalAttempted: 0
+};
+
+// --- Animation Variants ---
+const floatingAnimation = {
+  animate: {
+    y: [0, -20, 0],
+    transition: {
+      duration: 4,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }
+  }
+};
+
+const floatingAnimationSlow = {
+  animate: {
+    y: [0, -15, 0],
+    transition: {
+      duration: 5,
+      repeat: Infinity,
+      ease: "easeInOut",
+      delay: 0.5
+    }
+  }
+};
+
+const floatingAnimationGentle = {
+  animate: {
+    y: [0, -18, 0],
+    transition: {
+      duration: 4.5,
+      repeat: Infinity,
+      ease: "easeInOut",
+      delay: 1
+    }
+  }
+};
+
+const floatingAnimationDelayed = {
+  animate: {
+    y: [0, -22, 0],
+    transition: {
+      duration: 5.5,
+      repeat: Infinity,
+      ease: "easeInOut",
+      delay: 1.5
+    }
+  }
 };
 
 const App: React.FC = () => {
@@ -47,6 +96,7 @@ const App: React.FC = () => {
   const [userId, setUserId] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [dbConnected, setDbConnected] = useState(false);
+  
 
   // --- Effects ---
   useEffect(() => {
@@ -204,15 +254,59 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
+      
       {/* --- Background Image for Homepage --- */}
-      {/* <div className="absolute top-0 left-0 w-full h-full z-0 overflow-hidden">
-        <img
-          src="/book-background.png"
-          alt="Library background"
-          className="w-full h-full object-fill opacity-90 sepia-[.1]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10"></div>
-      </div> */}
+      {view === 'dashboard' && (
+      <div>
+        <motion.div 
+          className="absolute top-[100vh] left-[2vw] w-full h-full z-0 overflow-hidden"
+          {...floatingAnimation}
+        >
+          <img
+            src="/books-horizontal.png"
+            alt="Library background"
+            className="w-[400px] h-[300px] opacity-100 sepia-[.1]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10 pointer-events-none" ></div>
+        </motion.div>
+        
+        <motion.div 
+          className="absolute top-[20vh] -left-[15vw] w-full h-full z-0 overflow-hidden"
+          {...floatingAnimationSlow}
+        >
+          <img
+            src="/male-reader-left.png"
+            alt="Library background"
+            className="w-[400px] h-[400px] opacity-90 sepia-[.1]"
+          />
+          <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10 pointer-events-none" ></div>
+        </motion.div>
+        
+        <motion.div 
+          className="absolute top-[70vh] left-[76vw] w-full h-full z-0 overflow-hidden"
+          {...floatingAnimationGentle}
+        >
+          <img
+            src="/female-reader-1.png"
+            alt="Library background"
+            className="w-[500px] h-[300px] opacity-100 sepia-[.1]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10 pointer-events-none" ></div>
+        </motion.div>
+        
+        <motion.div 
+          className="absolute top-[140vh] left-[50vw] w-full h-full z-0 overflow-hidden"
+          {...floatingAnimationDelayed}
+        >
+          <img
+            src="/books-horizontal.png"
+            alt="Library background"
+            className="w-[400px] h-[300px] opacity-90 sepia-[.1]"
+          />
+          <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10 pointer-events-none" ></div>
+        </motion.div>
+      </div>
+      )}
       {/* --- Navigation / Header --- */}
       <header className="bg-library-wood text-white shadow-lg sticky top-0 z-50 border-b-4 border-library-gold relative">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -260,7 +354,7 @@ const App: React.FC = () => {
       
 
       {/* --- Main Content --- */}
-      <main className="flex-grow container mx-auto px-4 py-8 relative z-10">
+      <main className="flex-grow container mx-auto px-4 py-8 pb-32 relative z-10">
         
         {view === 'auth' && (
           <div className="min-h-[60vh] flex items-center justify-center">

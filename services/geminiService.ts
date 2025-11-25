@@ -48,76 +48,84 @@ export const generateQuestion = async (
   difficulty: Difficulty
 ): Promise<Question> => {
 
-  const { data, error } = await supabase.rpc('get_random_question', {
-    p_category: category,      // Use the category from your function params
-    p_difficulty: difficulty   // Use the difficulty from your function params
-  })
+  try {
 
-  console.log("Data is : ", data);
+    const { data, error } = await supabase.rpc('get_random_question', {
+      p_category: category,      // Use the category from your function params
+      p_difficulty: difficulty   // Use the difficulty from your function params
+    })
 
-  if (error || !data || data.length === 0) {
-    const ai = getClient();
+    console.log("Data is : ", data);
 
-    let promptText = "";
+    const dbQuestion = data[0]
 
-    if (category === Category.VERBAL) {
-      promptText = `Generate a ${difficulty} level GRE Verbal Reasoning question. 
-    It can be Sentence Equivalence, Text Completion, or Reading Comprehension. 
-    Ensure the vocabulary is appropriate for GRE level.`;
-    } else {
-      promptText = `Generate a ${difficulty} level GRE Quantitative Reasoning question.
-    It can be Arithmetic, Algebra, Geometry, or Data Analysis.
-    Ensure the math is strictly text-based or uses standard unicode symbols for clarity.`;
+    if (error || !data || data.length === 0) {
+      throw new Error("Couldn't get data from db.");
     }
 
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: promptText,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: questionSchema,
-          systemInstruction: "You are an expert GRE tutor. Generate high-quality, accurate practice questions similar to official ETS material.",
-        },
-      });
+    return {
+      id: dbQuestion.id,
+      text: dbQuestion.text,
+      options: dbQuestion.options,
+      correctIndex: dbQuestion.correct_index,
+      explanation: dbQuestion.explanation,
+      category: dbQuestion.category,
+      difficulty: dbQuestion.difficulty,
+      topic: dbQuestion.topic || "General"
+    };
 
-      const text = response.text;
-      if (!text) {
-        throw new Error("No content generated from Gemini.");
-      }
-
-      const jsonResponse = JSON.parse(text);
-
-      return {
-        id: Date.now().toString(),
-        text: jsonResponse.text,
-        options: jsonResponse.options,
-        correctIndex: jsonResponse.correctIndex,
-        explanation: jsonResponse.explanation,
-        category,
-        difficulty,
-        topic: jsonResponse.topic || "General"
-      };
-
-    } catch (error) {
-      console.error("Error generating question:", error);
-      throw error;
-    }
-
+  } catch (error) {
+    console.log("Couldn't get database.")
+    console.log(error);
   }
 
-  const dbQuestion = data[0]
+  const ai = getClient();
 
-  return {
-    id: dbQuestion.id,
-    text: dbQuestion.text,
-    options: dbQuestion.options,
-    correctIndex: dbQuestion.correct_index,
-    explanation: dbQuestion.explanation,
-    category: dbQuestion.category,
-    difficulty: dbQuestion.difficulty,
-    topic: dbQuestion.topic || "General"
-  };
+  let promptText = "";
+
+  if (category === Category.VERBAL) {
+    promptText = `Generate a ${difficulty} level GRE Verbal Reasoning question. 
+    It can be Sentence Equivalence, Text Completion, or Reading Comprehension. 
+    Ensure the vocabulary is appropriate for GRE level.`;
+  } else {
+    promptText = `Generate a ${difficulty} level GRE Quantitative Reasoning question.
+    It can be Arithmetic, Algebra, Geometry, or Data Analysis.
+    Ensure the math is strictly text-based or uses standard unicode symbols for clarity.`;
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: promptText,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: questionSchema,
+        systemInstruction: "You are an expert GRE tutor. Generate high-quality, accurate practice questions similar to official ETS material.",
+      },
+    });
+
+    const text = response.text;
+    if (!text) {
+      throw new Error("No content generated from Gemini.");
+    }
+
+    const jsonResponse = JSON.parse(text);
+
+    return {
+      id: Date.now().toString(),
+      text: jsonResponse.text,
+      options: jsonResponse.options,
+      correctIndex: jsonResponse.correctIndex,
+      explanation: jsonResponse.explanation,
+      category,
+      difficulty,
+      topic: jsonResponse.topic || "General"
+    };
+
+  } catch (error) {
+    console.error("Error generating question:", error);
+    throw error;
+  }
 
 };
 
@@ -144,7 +152,7 @@ export const createTutorChat = (question: Question): Chat => {
   3. End your response by asking the student if they understand this step and are ready for the next one.
   4. DO NOT proceed to the next step until the student explicitly agrees or asks to move on.
   5. DO NOT give the final answer immediately.
-  6. Keep your tone scholarly, patient, and encouraging (e.g., "Excellent question, scholar.", "Let us examine the first premise.").
+  6. Keep your tone scholarly, patient, and encouraging.
   `;
 
   return ai.chats.create({

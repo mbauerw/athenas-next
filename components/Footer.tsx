@@ -4,7 +4,7 @@ import { NAV_DATA } from './NavBar';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-white border-t border-library-wood/10 pt-16 pb-12 mt-auto relative z-10">
+    <footer className="bg-white border-t border-library-wood/10 pt-16 pb-12 mt-16 relative z-10">
       <div className="container mx-auto px-4">
         {/* Links Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
@@ -16,8 +16,8 @@ export const Footer: React.FC = () => {
               <ul className="space-y-4">
                 {NAV_DATA[category].map((link, idx) => (
                   <li key={idx}>
-                    <a 
-                      href="#" 
+                    <a
+                      href="#"
                       className="text-gray-500 hover:text-library-wood transition-colors text-sm font-medium block"
                     >
                       {link.label}
