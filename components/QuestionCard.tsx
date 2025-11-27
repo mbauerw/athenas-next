@@ -40,11 +40,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onNext }) 
     }
 
     // Submitted state
-    if (index === question.correctIndex) {
+    if (index === question.correct_index) {
       return `${base} border-green-600 bg-green-50 text-green-900 font-semibold`;
     }
     
-    if (selectedOption === index && index !== question.correctIndex) {
+    if (selectedOption === index && index !== question.correct_index) {
       return `${base} border-red-500 bg-red-50 text-red-900`;
     }
 
@@ -93,10 +93,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onNext }) 
                   <span className="inline-block w-6 font-bold mr-2">{String.fromCharCode(65 + index)}.</span>
                   {option}
                 </span>
-                {isSubmitted && index === question.correctIndex && (
+                {isSubmitted && index === question.correct_index && (
                   <CheckCircle className="text-green-600" size={24} />
                 )}
-                {isSubmitted && selectedOption === index && index !== question.correctIndex && (
+                {isSubmitted && selectedOption === index && index !== question.correct_index && (
                   <XCircle className="text-red-500" size={24} />
                 )}
               </div>

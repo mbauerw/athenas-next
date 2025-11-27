@@ -10,16 +10,16 @@ export enum Difficulty {
 }
 
 export interface Question {
-  id: string;
-  dbId?: number; // ID from the postgres database
+  question_id: number;
   text: string;
   options: string[];
-  correctIndex: number;
+  correct_index: number;
   explanation: string;
   category: Category;
   difficulty: Difficulty;
   topic: string; // e.g., "Algebra", "Sentence Equivalence"
 }
+
 
 export interface UserProgress {
   verbal: {

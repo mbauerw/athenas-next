@@ -27,7 +27,7 @@ const questionSchema: Schema = {
       items: { type: Type.STRING },
       description: "A list of 4 or 5 possible answer choices.",
     },
-    correctIndex: {
+    correct_index: {
       type: Type.INTEGER,
       description: "The zero-based index of the correct answer in the options array.",
     },
@@ -40,7 +40,7 @@ const questionSchema: Schema = {
       description: "The specific sub-topic (e.g., Algebra, Geometry, Text Completion, Reading Comprehension).",
     }
   },
-  required: ["text", "options", "correctIndex", "explanation", "topic"],
+  required: ["text", "options", "correct_index", "explanation", "topic"],
 };
 
 export const generateQuestion = async (
@@ -64,10 +64,10 @@ export const generateQuestion = async (
     }
 
     return {
-      id: dbQuestion.id,
+      question_id: dbQuestion.id,
       text: dbQuestion.text,
       options: dbQuestion.options,
-      correctIndex: dbQuestion.correct_index,
+      correct_index: dbQuestion.correct_index,
       explanation: dbQuestion.explanation,
       category: dbQuestion.category,
       difficulty: dbQuestion.difficulty,
@@ -112,10 +112,10 @@ export const generateQuestion = async (
     const jsonResponse = JSON.parse(text);
 
     return {
-      id: Date.now().toString(),
+      question_id: Date.now(),
       text: jsonResponse.text,
       options: jsonResponse.options,
-      correctIndex: jsonResponse.correctIndex,
+      correct_index: jsonResponse.correct_index,
       explanation: jsonResponse.explanation,
       category,
       difficulty,
@@ -140,7 +140,7 @@ export const createTutorChat = (question: Question): Chat => {
   Options:
   ${question.options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join('\n')}
   
-  The correct answer is index ${question.correctIndex} (Option ${String.fromCharCode(65 + question.correctIndex)}).
+  The correct answer is index ${question.correct_index} (Option ${String.fromCharCode(65 + question.correct_index)}).
   The explanation is: ${question.explanation}.
 
   YOUR GOAL:

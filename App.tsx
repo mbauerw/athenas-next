@@ -12,7 +12,8 @@ import {
   signOut,
   syncAuthUser,
   getUnansweredQuestion,
-  seedDatabase
+  seedDatabase,
+  getSession
 } from './services/supabaseService';
 import { Button } from './components/Button';
 import { ProgressBar } from './components/ProgressBar';
@@ -21,7 +22,8 @@ import { TutorChat } from './components/TutorChat';
 import { AuthScreen } from './components/AuthScreen';
 import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase';
+import { QuantQuiz } from './pages/QuantQuiz';
 
 // --- Initial State ---
 const initialProgress: UserProgress = {
@@ -34,7 +36,7 @@ const initialProgress: UserProgress = {
 // --- Animation Variants ---
 const floatingAnimation = {
   animate: {
-    y: [0, -20, 0],
+    y: [0, -10, 0],
     transition: {
       duration: 4,
       repeat: Infinity,
@@ -45,7 +47,7 @@ const floatingAnimation = {
 
 const floatingAnimationSlow = {
   animate: {
-    y: [0, -15, 0],
+    y: [0, -8, 0],
     transition: {
       duration: 5,
       repeat: Infinity,
@@ -57,9 +59,9 @@ const floatingAnimationSlow = {
 
 const floatingAnimationGentle = {
   animate: {
-    y: [0, -18, 0],
+    y: [0, -8, 0],
     transition: {
-      duration: 4.5,
+      duration: 8.5,
       repeat: Infinity,
       ease: "easeInOut",
       delay: 1
@@ -69,9 +71,9 @@ const floatingAnimationGentle = {
 
 const floatingAnimationDelayed = {
   animate: {
-    y: [0, -22, 0],
+    y: [0, -8, 0],
     transition: {
-      duration: 5.5,
+      duration: 10.5,
       repeat: Infinity,
       ease: "easeInOut",
       delay: 1.5
@@ -145,11 +147,20 @@ const App: React.FC = () => {
     setSelectedCategory(category);
     setSelectedDifficulty(difficulty);
 
+    console.log("Practice Started");
+
     if (userId && dbConnected) {
-      const sid = await startSession(userId, category);
-      setSessionId(sid);
+      console.log("userId && dbConnected start practice");
+      const sid = await getSession();
+      if (!sid){
+        console.log("No supaSession")
+        const sid2 = await startSession(userId, category);
+        setSessionId(sid2);
+      }
+      
     }
 
+    console.log("Set to question but no question appearing")
     setView('question');
     await fetchNewQuestion(category, difficulty);
   };
@@ -177,7 +188,7 @@ const App: React.FC = () => {
       if (userId && dbConnected) {
         const dbQId = await saveQuestionToDb(question);
         if (dbQId) {
-          question.dbId = dbQId;
+          question.question_id = dbQId;
         }
       }
 
@@ -192,7 +203,9 @@ const App: React.FC = () => {
   const handleQuestionComplete = async (selectedIndex: number) => {
     if (!selectedCategory || !selectedDifficulty || !currentQuestion) return;
 
-    const isCorrect = selectedIndex === currentQuestion.correctIndex;
+    console.log("Handle Questions Complete")
+
+    const isCorrect = selectedIndex === currentQuestion.correct_index;
 
     // Update Local Progress
     setProgress(prev => {
@@ -253,13 +266,13 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="max-h-screen h-screen bg-library-paper flex flex-col font-sans text-library-ink relative overflow-y-auto">
+    <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
       
       {/* --- Background Image for Homepage --- */}
       {view === 'dashboard' && (
-      <div className='max-h-screen overflow-hidden'>
+      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <motion.div 
-          className="absolute top-[100vh] left-[2vw] w-full h-full z-0 overflow-hidden"
+          className="absolute top-[60vh] left-[2vw] z-0"
           {...floatingAnimation}
         >
           <img
@@ -267,11 +280,11 @@ const App: React.FC = () => {
             alt="Library background"
             className="w-[400px] h-[300px] opacity-100 sepia-[.1]"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10 pointer-events-none" ></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
         </motion.div>
         
         <motion.div 
-          className="absolute top-[20vh] -left-[15vw] w-full h-full z-0 overflow-hidden"
+          className="absolute top-[20vh] -left-[15vw] z-0"
           {...floatingAnimationSlow}
         >
           <img
@@ -279,23 +292,23 @@ const App: React.FC = () => {
             alt="Library background"
             className="w-[400px] h-[400px] opacity-90 sepia-[.1]"
           />
-          <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10 pointer-events-none" ></div>
+          <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
         </motion.div>
         
         <motion.div 
-          className="absolute top-[70vh] left-[76vw] w-full h-full z-0 overflow-hidden"
+          className="absolute top-[70vh] left-[78vw] z-0"
           {...floatingAnimationGentle}
         >
           <img
             src="/female-reader-1.png"
             alt="Library background"
-            className="w-[500px] h-[300px] opacity-100 sepia-[.1]"
+            className="w-[900px] h-[280px] opacity-100 sepia-[.1]"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10 pointer-events-none" ></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
         </motion.div>
         
         <motion.div 
-          className="absolute top-[140vh] left-[50vw] w-full h-full z-0 overflow-hidden"
+          className="absolute bottom-[10vh] left-[50vw] z-0"
           {...floatingAnimationDelayed}
         >
           <img
@@ -303,7 +316,7 @@ const App: React.FC = () => {
             alt="Library background"
             className="w-[400px] h-[300px] opacity-90 sepia-[.1]"
           />
-          <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10 pointer-events-none" ></div>
+          <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
         </motion.div>
       </div>
       )}
@@ -368,6 +381,7 @@ const App: React.FC = () => {
         {view === 'dashboard' && (
           // --- Dashboard View ---
           <div className="animate-fade-in">
+            {/* <QuantQuiz></QuantQuiz>  */}
             <div className="text-center mb-12 pt-8">
               <div className="inline-block bg-library-paper/80 backdrop-blur-sm p-6 rounded-lg shadow-sm border border-library-wood/10">
                 <h2 className="text-4xl font-serif font-bold text-library-wood mb-4">

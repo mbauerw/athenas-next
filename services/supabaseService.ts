@@ -48,8 +48,13 @@ export const signOut = async () => {
 };
 
 export const getSession = async () => {
-  if (!supabase) return null;
+  if (!supabase){
+    console.log("No Session from get Session")
+    return null;
+  } 
+  console.log("Get Session Data: ")
   const { data } = await supabase.auth.getSession();
+  console.log("Get Session Data: ", data)
   return data.session;
 };
 
@@ -166,6 +171,8 @@ const getSectionId = async (category: Category) => {
 const getTopicId = async (topicName: string, sectionId: number) => {
   if (!supabase) return null;
   
+  console.log("Getting Topic ID")
+
   const { data: existing } = await supabase
     .from('topics')
     .select('topic_id')
@@ -202,6 +209,8 @@ export const startSession = async (userId: number, category: Category): Promise<
   if (!supabase) return null;
   
   const sectionId = await getSectionId(category);
+
+  console.log("Session started");
   
   const { data, error } = await supabase.from('practice_sessions').insert({
     user_id: userId,
@@ -219,7 +228,7 @@ export const saveQuestionToDb = async (question: Question): Promise<number | nul
   const sectionId = await getSectionId(question.category);
   if (!sectionId) return null;
 
-  const topicId = await getTopicId(question.topic, sectionId);
+  const topicId = question.topic;
   const typeId = await getQuestionTypeId('Multiple Choice');
 
   const diffLevel = mapDifficultyToLevel(question.difficulty);
@@ -250,7 +259,7 @@ export const saveQuestionToDb = async (question: Question): Promise<number | nul
   const optionsToInsert = question.options.map((opt, idx) => ({
     question_id: questionId,
     choice_text: opt,
-    is_correct: idx === question.correctIndex,
+    is_correct: idx === question.correct_index,
     choice_order: idx + 1
   }));
 
@@ -269,6 +278,8 @@ export const saveUserAnswer = async (
 ) => {
   if (!supabase) return;
 
+  console.log("Trying to save user Answer")
+
   const { data: choices } = await supabase
     .from('answer_choices')
     .select('choice_id, choice_order')
@@ -281,7 +292,7 @@ export const saveUserAnswer = async (
   const selectedChoice = choices[selectedOptionIndex];
   if (!selectedChoice) return;
 
-  const isCorrect = selectedOptionIndex === question.correctIndex;
+  const isCorrect = selectedOptionIndex === question.correct_index;
 
   // Check if already answered in this session (optional, but good for integrity)
   const { data: existingAnswer } = await supabase
@@ -306,7 +317,7 @@ export const saveUserAnswer = async (
   
   // Update User Progress Stats
   const sectionId = await getSectionId(question.category);
-  const topicId = await getTopicId(question.topic, sectionId!);
+  const topicId = question.topic;
 
   const { data: prog } = await supabase
     .from('user_progress')
@@ -397,11 +408,10 @@ export const getUnansweredQuestion = async (
 
   // Map to app Question type
   return {
-    id: randomQ.question_id.toString(),
-    dbId: randomQ.question_id,
+    question_id: randomQ.question_id.toString(),
     text: randomQ.question_text,
     options: options.map(o => o.choice_text),
-    correctIndex: options.findIndex(o => o.is_correct),
+    correct_index: options.findIndex(o => o.is_correct),
     explanation: randomQ.explanation || "No explanation available.",
     category: category,
     difficulty: difficulty,

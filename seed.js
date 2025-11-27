@@ -1,11 +1,13 @@
 import pg from 'pg';
+
 const { Client } = pg;
 
 // Mocking Enums if you paste the array exactly as is:
 const Category = { VERBAL: 'VERBAL', QUANT: 'QUANT' };
 const Difficulty = { EASY: 'EASY', MEDIUM: 'MEDIUM', HARD: 'HARD' }; 
 
-const SEED_QUESTIONS = [
+
+export const SEED_QUESTIONS = [
   {
     question_id: 1,
     text: "Although the movie was panned by critics, it became a ______ hit at the box office, surprising even its producers.",
