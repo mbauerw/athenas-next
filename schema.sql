@@ -4,12 +4,12 @@
 CREATE TABLE public.bookmarked_questions (
   bookmark_id integer NOT NULL DEFAULT nextval('bookmarked_questions_bookmark_id_seq'::regclass),
   user_id integer,
-  question_id character varying,
+  question_id integer,
   notes text,
   created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT bookmarked_questions_pkey PRIMARY KEY (bookmark_id),
   CONSTRAINT bookmarked_questions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id),
-  CONSTRAINT bookmarked_questions_question_id_fkey FOREIGN KEY (question_id) REFERENCES public.questions(id)
+  CONSTRAINT bookmarked_questions_question_id_fkey FOREIGN KEY (question_id) REFERENCES public.questions(question_id)
 );
 CREATE TABLE public.practice_sessions (
   session_id integer NOT NULL DEFAULT nextval('practice_sessions_session_id_seq'::regclass),
@@ -24,7 +24,7 @@ CREATE TABLE public.practice_sessions (
   CONSTRAINT practice_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id)
 );
 CREATE TABLE public.questions (
-  id character varying NOT NULL,
+  question_id integer NOT NULL DEFAULT nextval('questions_question_id_seq'::regclass),
   text text NOT NULL,
   options ARRAY NOT NULL,
   correct_index integer NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE public.questions (
   created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   is_active boolean DEFAULT true,
-  CONSTRAINT questions_pkey PRIMARY KEY (id)
+  CONSTRAINT questions_pkey PRIMARY KEY (question_id)
 );
 CREATE TABLE public.session_scores (
   score_id integer NOT NULL DEFAULT nextval('session_scores_score_id_seq'::regclass),
@@ -55,7 +55,7 @@ CREATE TABLE public.session_scores (
 CREATE TABLE public.user_answers (
   answer_id integer NOT NULL DEFAULT nextval('user_answers_answer_id_seq'::regclass),
   user_id integer,
-  question_id character varying,
+  question_id integer,
   session_id integer,
   selected_index integer,
   is_correct boolean NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE public.user_answers (
   answered_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT user_answers_pkey PRIMARY KEY (answer_id),
   CONSTRAINT user_answers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id),
-  CONSTRAINT user_answers_question_id_fkey FOREIGN KEY (question_id) REFERENCES public.questions(id),
+  CONSTRAINT user_answers_question_id_fkey FOREIGN KEY (question_id) REFERENCES public.questions(question_id),
   CONSTRAINT user_answers_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.practice_sessions(session_id)
 );
 CREATE TABLE public.user_progress (

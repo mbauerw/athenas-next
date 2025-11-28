@@ -48,36 +48,36 @@ export const generateQuestion = async (
   difficulty: Difficulty
 ): Promise<Question> => {
 
-  try {
+  // try {
 
-    const { data, error } = await supabase.rpc('get_random_question', {
-      p_category: category,      // Use the category from your function params
-      p_difficulty: difficulty   // Use the difficulty from your function params
-    })
+  //   const { data, error } = await supabase.rpc('get_random_question', {
+  //     p_category: category,      // Use the category from your function params
+  //     p_difficulty: difficulty   // Use the difficulty from your function params
+  //   })
 
-    console.log("Data is : ", data);
+  //   console.log("Data is : ", data);
 
-    const dbQuestion = data[0]
+  //   const dbQuestion = data[0]
 
-    if (error || !data || data.length === 0) {
-      throw new Error("Couldn't get data from db.");
-    }
+  //   if (error || !data || data.length === 0) {
+  //     throw new Error("Couldn't get data from db.");
+  //   }
 
-    return {
-      question_id: dbQuestion.id,
-      text: dbQuestion.text,
-      options: dbQuestion.options,
-      correct_index: dbQuestion.correct_index,
-      explanation: dbQuestion.explanation,
-      category: dbQuestion.category,
-      difficulty: dbQuestion.difficulty,
-      topic: dbQuestion.topic || "General"
-    };
+  //   return {
+  //     question_id: dbQuestion.id,
+  //     text: dbQuestion.text,
+  //     options: dbQuestion.options,
+  //     correct_index: dbQuestion.correct_index,
+  //     explanation: dbQuestion.explanation,
+  //     category: dbQuestion.category,
+  //     difficulty: dbQuestion.difficulty,
+  //     topic: dbQuestion.topic || "General"
+  //   };
 
-  } catch (error) {
-    console.log("Couldn't get database.")
-    console.log(error);
-  }
+  // } catch (error) {
+  //   console.log("Couldn't get database.")
+  //   console.log(error);
+  // }
 
   const ai = getClient();
 
@@ -110,6 +110,7 @@ export const generateQuestion = async (
     }
 
     const jsonResponse = JSON.parse(text);
+    console.log("Retrieved AI question")
 
     return {
       question_id: Date.now(),

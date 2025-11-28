@@ -115,7 +115,7 @@ export const NavBar: React.FC = () => {
       {/* Overlay to close menu when clicking outside */}
       {activeMenu && (
         <div 
-          className="fixed inset-0 top-[130px] bg-black/20 z-30" 
+          className="fixed inset-0 top-[100px] bg-black/20 z-30" 
           onClick={() => setActiveMenu(null)}
         />
       )}

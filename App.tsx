@@ -36,7 +36,7 @@ const initialProgress: UserProgress = {
 // --- Animation Variants ---
 const floatingAnimation = {
   animate: {
-    y: [0, -10, 0],
+    y: [0, -5, 0],
     transition: {
       duration: 4,
       repeat: Infinity,
@@ -47,7 +47,7 @@ const floatingAnimation = {
 
 const floatingAnimationSlow = {
   animate: {
-    y: [0, -8, 0],
+    y: [0, -4, 0],
     transition: {
       duration: 5,
       repeat: Infinity,
@@ -59,7 +59,7 @@ const floatingAnimationSlow = {
 
 const floatingAnimationGentle = {
   animate: {
-    y: [0, -8, 0],
+    y: [0, -3, 0],
     transition: {
       duration: 8.5,
       repeat: Infinity,
@@ -71,7 +71,7 @@ const floatingAnimationGentle = {
 
 const floatingAnimationDelayed = {
   animate: {
-    y: [0, -8, 0],
+    y: [0, -3, 0],
     transition: {
       duration: 10.5,
       repeat: Infinity,
@@ -170,15 +170,15 @@ const App: React.FC = () => {
     setError(null);
     try {
       // 1. Try to fetch from DB first (The "Archive")
-      if (userId && dbConnected) {
-        const dbQuestion = await getUnansweredQuestion(userId, category, difficulty);
-        if (dbQuestion) {
-          console.log("Retrieved question from archives (DB)");
-          setCurrentQuestion(dbQuestion);
-          setLoading(false);
-          return;
-        }
-      }
+      // if (userId && dbConnected) {
+      //   const dbQuestion = await getUnansweredQuestion(userId, category, difficulty);
+      //   if (dbQuestion) {
+      //     console.log("Retrieved question from archives (DB)");
+      //     setCurrentQuestion(dbQuestion);
+      //     setLoading(false);
+      //     return;
+      //   }
+      // }
 
       // 2. If no DB question found, generate new one (The "Oracle")
       console.log("Generating new question via AI");
@@ -296,7 +296,7 @@ const App: React.FC = () => {
         </motion.div>
         
         <motion.div 
-          className="absolute top-[70vh] left-[78vw] z-0"
+          className="absolute top-[70vh] left-[80vw] -mr-20 z-0"
           {...floatingAnimationGentle}
         >
           <img
