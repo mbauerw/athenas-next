@@ -183,6 +183,8 @@ export const saveQuestionToDb = async (question: Question): Promise<number | nul
     .order('question_id', { ascending: false })
     .limit(1).single()
 
+
+  console.log("Why is it not saving")  
   const qId = newData.question_id + 1;
 
   // Insert into 'questions' table - SCHEMA UPDATE: direct array insertion

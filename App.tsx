@@ -119,7 +119,7 @@ const App: React.FC = () => {
           setAuthUser(session.user);
           const dbId = await syncAuthUser(session.user);
           setUserId(dbId);
-          // Since we just logged in, go to dashboard
+          console.log("Set User Id: " , dbId)
           if (event === 'SIGNED_IN') setView('dashboard');
         } else {
           setAuthUser(null);
@@ -186,6 +186,7 @@ const App: React.FC = () => {
 
       // Persist Question so it becomes part of the archive
       if (userId && dbConnected) {
+        console.log("Saving question to DB")
         const dbQId = await saveQuestionToDb(question);
         if (dbQId) {
           question.question_id = dbQId;
@@ -211,6 +212,8 @@ const App: React.FC = () => {
     setProgress(prev => {
       const newProgress = { ...prev };
 
+      console.log("updating local progress")
+
       if (selectedCategory === Category.VERBAL) {
         const diffKey = selectedDifficulty.toLowerCase() as keyof typeof prev.verbal;
         if (newProgress.verbal[diffKey] < MAX_QUESTIONS_PER_LEVEL) {
@@ -229,9 +232,9 @@ const App: React.FC = () => {
       return newProgress;
     });
 
-    // Save Answer to DB
-    if (userId && dbConnected && currentQuestion.dbId) {
-      await saveUserAnswer(userId, sessionId, currentQuestion.dbId, currentQuestion, selectedIndex);
+    if (userId && dbConnected && currentQuestion.question_id) {
+      console.log("Saving User Answer")
+      await saveUserAnswer(userId, sessionId, currentQuestion.question_id, currentQuestion, selectedIndex);
     }
 
     // Fetch Next
