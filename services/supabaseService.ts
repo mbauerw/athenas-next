@@ -1,5 +1,5 @@
 import { createClient, User } from '@supabase/supabase-js';
-import { Question, Category, Difficulty } from '../types';
+import { Question, Category, Difficulty, UserProgressStats } from '../types';
 import { SEED_QUESTIONS } from '../data/seedQuestions'; // Assuming this is where your seed data lives based on file list
 // If using the other seed file, adjust import accordingly. 
 import { supabase } from '@/lib/supabase'
@@ -28,6 +28,7 @@ export const signUpWithEmail = async (email: string, password: string, meta: { u
     }
   });
 
+  console.log("Signed Up");
   if (data.user) {
     await syncAuthUser(data.user);
   }
@@ -162,51 +163,46 @@ export const startSession = async (userId: number, category: Category): Promise<
 };
 
 export const saveQuestionToDb = async (question: Question): Promise<number | null> => {
-  if (!supabase){
-    console.log("No supa from saveQuestionToDb")
-    return null;
-
-  } 
-
-  // Check if exact text already exists to avoid dupe
-  const { data: existing } = await supabase
-    .from('questions')
-    .select('question_id')
-    .eq('question_id', question.question_id)
-    .single();
-
-  if (existing) return existing.question_id;
-
-  const { data: newData, error: newError } = await supabase
-    .from('questions')
-    .select('question_id')
-    .order('question_id', { ascending: false })
-    .limit(1).single()
-
-
-  console.log("Why is it not saving")  
-  const qId = newData.question_id + 1;
-
-  // Insert into 'questions' table - SCHEMA UPDATE: direct array insertion
-  const { data: qData, error } = await supabase.from('questions').insert({
-    question_id: qId,
-    text: question.text,
-    options: question.options, // Array column
-    correct_index: question.correct_index,
-    explanation: question.explanation,
-    category: question.category,
-    difficulty: question.difficulty,
-    topic: question.topic || 'General',
-    is_active: true
-  }).select('question_id').single();
-
-  if (error) {
-    console.error("Error saving question:", error);
+  if (!supabase) {
+    console.log("No Supabase client available.");
     return null;
   }
 
-  return qData ? qData.question_id : null;
+  try {
+    const { data: existing } = await supabase
+      .from('questions')
+      .select('question_id')
+      .eq('text', question.text)
+      .maybeSingle();
+
+    if (existing) {
+      console.log("Question already exists in DB:", existing.question_id);
+      return existing.question_id;
+    }
+
+    const { data: qData, error } = await supabase.from('questions').insert({
+      text: question.text,
+      options: question.options,
+      correct_index: question.correct_index,
+      explanation: question.explanation,
+      category: question.category,
+      difficulty: question.difficulty,
+      topic: question.topic || 'General',
+      is_active: true
+    }).select('question_id').single();
+
+    if (error) {
+      console.error("Error inserting question:", error);
+      return null;
+    }
+
+    return qData ? qData.question_id : null;
+  } catch (err) {
+    console.error("Exception in saveQuestionToDb:", err);
+    return null;
+  }
 };
+
 
 export const saveUserAnswer = async (
   userId: number,
@@ -220,62 +216,122 @@ export const saveUserAnswer = async (
 
   const isCorrect = selectedOptionIndex === question.correct_index;
 
-  // Check if already answered in this session
-  const { data: existingAnswer } = await supabase
-    .from('user_answers')
-    .select('answer_id')
-    .eq('user_id', userId)
-    .eq('question_id', questionId)
-    .eq('session_id', sessionId)
-    .single();
+  try {
+    let query = supabase
+      .from('user_answers')
+      .select('answer_id')
+      .eq('user_id', userId)
+      .eq('question_id', questionId);
 
-  if (existingAnswer) return;
+    if (sessionId) {
+      query = query.eq('session_id', sessionId);
+    } else {
+      query = query.is('session_id', null); // .is() checks for null
+    }
 
-  // Insert Answer - SCHEMA UPDATE: uses selected_index
-  await supabase.from('user_answers').insert({
-    user_id: userId,
-    question_id: questionId,
-    session_id: sessionId,
-    selected_index: selectedOptionIndex,
-    is_correct: isCorrect,
-    time_spent_seconds: timeSpentSeconds,
-    answered_at: new Date().toISOString()
-  });
+    const { data: existingAnswer } = await query.maybeSingle(); // .maybeSingle() prevents crash
 
-  // Update User Progress Stats
-  // SCHEMA UPDATE: Uses category/topic strings instead of IDs
-  const { data: prog } = await supabase
-    .from('user_progress')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('category', question.category)
-    .eq('topic', question.topic)
-    .single();
+    if (existingAnswer) return;
 
-  if (prog) {
-    const newTotal = (prog.total_questions_attempted || 0) + 1;
-    const newCorrect = (prog.total_questions_correct || 0) + (isCorrect ? 1 : 0);
-    await supabase.from('user_progress').update({
-      total_questions_attempted: newTotal,
-      total_questions_correct: newCorrect,
-      accuracy_percentage: (newCorrect / newTotal) * 100,
-      last_practiced: new Date().toISOString()
-    }).eq('progress_id', prog.progress_id);
-  } else {
-    await supabase.from('user_progress').insert({
+    // Insert Answer
+    await supabase.from('user_answers').insert({
       user_id: userId,
-      category: question.category,
-      topic: question.topic,
-      difficulty: question.difficulty, // Store current difficulty level for context
-      total_questions_attempted: 1,
-      total_questions_correct: isCorrect ? 1 : 0,
-      accuracy_percentage: isCorrect ? 100 : 0,
-      last_practiced: new Date().toISOString()
+      question_id: questionId,
+      session_id: sessionId,
+      selected_index: selectedOptionIndex,
+      is_correct: isCorrect,
+      time_spent_seconds: timeSpentSeconds,
+      answered_at: new Date().toISOString()
     });
+
+    // Update User Progress Stats
+    // FIX 4: Use .maybeSingle() to handle "first time on this topic" gracefully
+    const { data: prog } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('category', question.category)
+      .eq('topic', question.topic || 'General') // specific topic
+      .maybeSingle();
+
+    if (prog) {
+      const newTotal = (prog.total_questions_attempted || 0) + 1;
+      const newCorrect = (prog.total_questions_correct || 0) + (isCorrect ? 1 : 0);
+      await supabase.from('user_progress').update({
+        total_questions_attempted: newTotal,
+        total_questions_correct: newCorrect,
+        accuracy_percentage: (newCorrect / newTotal) * 100,
+        last_practiced: new Date().toISOString()
+      }).eq('progress_id', prog.progress_id);
+
+      // Call the function
+      const { data, error } = await supabase.rpc('update_progress_completion');
+
+      if (error) {
+        console.error('Error updating progress:', error);
+      } else {
+        console.log('Progress updated successfully');
+      }
+    } else {
+      await supabase.from('user_progress').insert({
+        user_id: userId,
+        category: question.category,
+        topic: question.topic || 'General',
+        difficulty: question.difficulty,
+        total_questions_attempted: 1,
+        total_questions_correct: isCorrect ? 1 : 0,
+        accuracy_percentage: isCorrect ? 100 : 0,
+        last_practiced: new Date().toISOString()
+      });
+    }
+  } catch (err) {
+    console.error("Error in saveUserAnswer:", err);
   }
 };
-
 // --- DB Fetching Logic ---
+
+
+
+export const getUserProgressStats = async (
+  userId: number,
+  category?: Category 
+): Promise<UserProgressStats | null> => {
+  if (!supabase) return null;
+
+  let query = supabase
+    .from('user_progress')
+    .select('total_questions_attempted, total_questions_correct, total_available_questions')
+    .eq('user_id', userId);
+
+  if (category) {
+    query = query.eq('category', category);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching user progress:', error);
+    return null;
+  }
+
+  const totalAttempted = data?.reduce((sum, row) => sum + (row.total_questions_attempted || 0), 0) || 0;
+  const totalCorrect = data?.reduce((sum, row) => sum + (row.total_questions_correct || 0), 0) || 0;
+  const totalQuestions = data?.reduce((sum, row) => sum + (row.total_available_questions || 0), 0) || 0;
+  const overallAccuracy = totalAttempted > 0 ? (totalCorrect / totalAttempted) * 100 : 0;
+  const overallCompletion = totalAttempted > 0 ? (totalAttempted/ totalQuestions) * 100 : 0;
+  const overallPercentageCorrect = totalAttempted > 0 ? (totalCorrect / totalQuestions) * 100: 0;
+
+  return {
+    
+    totalAttempted,
+    totalCorrect,
+    totalQuestions,
+    overallAccuracy: parseFloat(overallAccuracy.toFixed(2)),
+    overallCompletion: parseFloat(overallAccuracy.toFixed(2)),
+    overallPercentageCorrect: parseFloat(overallAccuracy.toFixed(2)),
+
+  };
+};
 
 export const getUnansweredQuestion = async (
   userId: number,

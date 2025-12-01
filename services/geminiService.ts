@@ -1,10 +1,8 @@
 import { GoogleGenAI, Type, Schema, Chat } from "@google/genai";
 import { Category, Difficulty, Question } from "../types";
 import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
 
 
 const getClient = () => {
@@ -113,7 +111,7 @@ export const generateQuestion = async (
     console.log("Retrieved AI question")
 
     return {
-      question_id: Date.now(),
+      question_id: 0,
       text: jsonResponse.text,
       options: jsonResponse.options,
       correct_index: jsonResponse.correct_index,

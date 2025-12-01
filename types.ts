@@ -36,4 +36,14 @@ export interface UserProgress {
   totalAttempted: number;
 }
 
+export interface UserProgressStats {
+  totalAttempted: number;
+  totalCorrect: number;
+  totalQuestions: number;
+  overallAccuracy: number;
+  overallCompletion: number;
+  overallPercentageCorrect: number;
+}
+
+
 export const MAX_QUESTIONS_PER_LEVEL = 50; // 50 * 3 levels * 2 categories = 300 questions

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Library, BookOpen, TrendingUp, GraduationCap, AlertTriangle, RefreshCw, LogOut, UserCircle } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
-import { motion } from 'framer-motion';
-import { Category, Difficulty, Question, UserProgress, MAX_QUESTIONS_PER_LEVEL } from './types';
+import { motion, number } from 'framer-motion';
+import { Category, Difficulty, Question, UserProgress, MAX_QUESTIONS_PER_LEVEL, UserProgressStats } from './types';
 import { generateQuestion } from './services/geminiService';
 import {
   initializeUser,
@@ -12,6 +12,7 @@ import {
   signOut,
   syncAuthUser,
   getUnansweredQuestion,
+  getUserProgressStats,
   seedDatabase,
   getSession
 } from './services/supabaseService';
@@ -47,7 +48,7 @@ const floatingAnimation = {
 
 const floatingAnimationSlow = {
   animate: {
-    y: [0, -4, 0],
+    y: [0, -8, 0],
     transition: {
       duration: 5,
       repeat: Infinity,
@@ -59,9 +60,9 @@ const floatingAnimationSlow = {
 
 const floatingAnimationGentle = {
   animate: {
-    y: [0, -3, 0],
+    y: [0, -10, 0],
     transition: {
-      duration: 8.5,
+      duration: 12.5,
       repeat: Infinity,
       ease: "easeInOut",
       delay: 1
@@ -98,7 +99,17 @@ const App: React.FC = () => {
   const [userId, setUserId] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [dbConnected, setDbConnected] = useState(false);
-  
+
+  // Progress Totals
+  const [userStats, setUserStats] = useState<UserProgressStats | null>(null);
+
+  const [quantTotal, setQuantTotal] = useState<number | null>(null);
+  const [verbalTotal, setVerbalTotal] = useState<number | null>(null);
+  const [userTotal, setUserTotal] = useState<number | null>(null);
+  const [overallTotal, setOverallTotal] = useState<number | null>(null);
+  const [overallVerbalTotal, setOverallVerbal] = useState<number | null>(null);
+  const [overallQuantTotal, setOverallQuantTotal] = useState<number | null>(null);
+
 
   // --- Effects ---
   useEffect(() => {
@@ -119,7 +130,7 @@ const App: React.FC = () => {
           setAuthUser(session.user);
           const dbId = await syncAuthUser(session.user);
           setUserId(dbId);
-          console.log("Set User Id: " , dbId)
+          console.log("Set User Id: ", dbId)
           if (event === 'SIGNED_IN') setView('dashboard');
         } else {
           setAuthUser(null);
@@ -141,6 +152,8 @@ const App: React.FC = () => {
     initDb();
   }, []);
 
+
+
   // --- Handlers ---
 
   const startPractice = async (category: Category, difficulty: Difficulty) => {
@@ -152,12 +165,12 @@ const App: React.FC = () => {
     if (userId && dbConnected) {
       console.log("userId && dbConnected start practice");
       const sid = await getSession();
-      if (!sid){
+      if (!sid) {
         console.log("No supaSession")
         const sid2 = await startSession(userId, category);
         setSessionId(sid2);
       }
-      
+
     }
 
     console.log("Set to question but no question appearing")
@@ -187,10 +200,16 @@ const App: React.FC = () => {
       // Persist Question so it becomes part of the archive
       if (userId && dbConnected) {
         console.log("Saving question to DB")
-        const dbQId = await saveQuestionToDb(question);
-        if (dbQId) {
-          question.question_id = dbQId;
+        try {
+          const dbQId = await saveQuestionToDb(question);
+          if (dbQId) {
+            question.question_id = dbQId;
+          }
+        } catch (error) {
+          console.log('saving to db error: ', error);
         }
+
+
       }
 
       setCurrentQuestion(question);
@@ -204,41 +223,38 @@ const App: React.FC = () => {
   const handleQuestionComplete = async (selectedIndex: number) => {
     if (!selectedCategory || !selectedDifficulty || !currentQuestion) return;
 
-    console.log("Handle Questions Complete")
+    if (loading) return;
 
-    const isCorrect = selectedIndex === currentQuestion.correct_index;
 
-    // Update Local Progress
-    setProgress(prev => {
-      const newProgress = { ...prev };
+    setLoading(true);
 
-      console.log("updating local progress")
+    // 3. Snapshot Data
+    // Capture the current question details now, just in case state shifts weirdly
+    const questionToSave = currentQuestion;
+    const qId = questionToSave.question_id;
+    const isCorrect = selectedIndex === questionToSave.correct_index;
 
-      if (selectedCategory === Category.VERBAL) {
-        const diffKey = selectedDifficulty.toLowerCase() as keyof typeof prev.verbal;
-        if (newProgress.verbal[diffKey] < MAX_QUESTIONS_PER_LEVEL) {
-          newProgress.verbal[diffKey]++;
-        }
-      } else {
-        const diffKey = selectedDifficulty.toLowerCase() as keyof typeof prev.quant;
-        if (newProgress.quant[diffKey] < MAX_QUESTIONS_PER_LEVEL) {
-          newProgress.quant[diffKey]++;
-        }
+
+    try {
+
+
+      if (userId && dbConnected && qId) {
+        console.log("Saving User Answer");
+        await saveUserAnswer(userId, sessionId, qId, questionToSave, selectedIndex);
+        const total = await getUserProgressStats(userId)
+        setUserStats(total);
+
       }
 
-      newProgress.totalAttempted++;
-      if (isCorrect) newProgress.correctAnswers++;
 
-      return newProgress;
-    });
+      console.log("fetching new question from handleQuestionComplete");
+      await fetchNewQuestion(selectedCategory, selectedDifficulty);
 
-    if (userId && dbConnected && currentQuestion.question_id) {
-      console.log("Saving User Answer")
-      await saveUserAnswer(userId, sessionId, currentQuestion.question_id, currentQuestion, selectedIndex);
+    } catch (err) {
+      console.error("Error during question transition:", err);
+      // Ensure we don't get stuck in loading state if an error occurs
+      setLoading(false);
     }
-
-    // Fetch Next
-    fetchNewQuestion(selectedCategory, selectedDifficulty);
   };
 
   const returnToDashboard = () => {
@@ -270,11 +286,11 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
-      
+
       {/* --- Background Image for Homepage --- */}
       {view === 'dashboard' && (
-      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <motion.div 
+        <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+          {/* <motion.div 
           className="absolute top-[60vh] left-[2vw] z-0"
           {...floatingAnimation}
         >
@@ -284,33 +300,33 @@ const App: React.FC = () => {
             className="w-[400px] h-[300px] opacity-100 sepia-[.1]"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
-        </motion.div>
-        
-        <motion.div 
-          className="absolute top-[20vh] -left-[15vw] z-0"
-          {...floatingAnimationSlow}
-        >
-          <img
-            src="/male-reader-left.png"
-            alt="Library background"
-            className="w-[400px] h-[400px] opacity-90 sepia-[.1]"
-          />
-          <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
-        </motion.div>
-        
-        <motion.div 
-          className="absolute top-[70vh] left-[80vw] -mr-20 z-0"
-          {...floatingAnimationGentle}
-        >
-          <img
-            src="/female-reader-1.png"
-            alt="Library background"
-            className="w-[900px] h-[280px] opacity-100 sepia-[.1]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
-        </motion.div>
-        
-        <motion.div 
+        </motion.div> */}
+
+          <motion.div
+            className="absolute top-[60vh] -left-[15vw] z-0"
+            {...floatingAnimationSlow}
+          >
+            <img
+              src="/male-reader-left.png"
+              alt="Library background"
+              className="w-[400px] h-[400px] opacity-90 sepia-[.1]"
+            />
+            <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
+          </motion.div>
+
+          <motion.div
+            className="absolute top-[70vh] left-[80vw] -mr-20 z-0"
+            {...floatingAnimationGentle}
+          >
+            <img
+              src="/female-reader-1.png"
+              alt="Library background"
+              className="w-[400px] h-[280px] opacity-100 sepia-[.1]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
+          </motion.div>
+
+          {/* <motion.div 
           className="absolute bottom-[10vh] left-[50vw] z-0"
           {...floatingAnimationDelayed}
         >
@@ -320,8 +336,8 @@ const App: React.FC = () => {
             className="w-[400px] h-[300px] opacity-90 sepia-[.1]"
           />
           <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
-        </motion.div>
-      </div>
+        </motion.div> */}
+        </div>
       )}
       {/* --- Navigation / Header --- */}
       <header className="bg-library-wood text-white shadow-lg sticky top-0 z-50 border-b-4 border-library-gold relative">
@@ -367,11 +383,11 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
-      
+
 
       {/* --- Main Content --- */}
       <main className="flex-grow container mx-auto px-4 py-8 pb-0 relative z-10">
-        
+
         {view === 'auth' && (
           <div className="min-h-[60vh] flex items-center justify-center">
             <AuthScreen
@@ -493,18 +509,31 @@ const App: React.FC = () => {
                 <GraduationCap size={40} />
                 <div>
                   <h4 className="text-xl font-serif font-bold">Total Progress</h4>
-                  <p className="text-library-paperDark/80">Questions Attempted: {progress.totalAttempted} / 300</p>
+                  {userStats &&
+                    <p className="text-library-paperDark/80">Questions Attempted: {userStats.totalAttempted} / {userStats.totalQuestions}</p>
+                  }
                 </div>
               </div>
               <div className="text-right">
+              {userStats &&
+                  
                 <div className="text-3xl font-bold font-serif">
-                  {progress.totalAttempted > 0
-                    ? Math.round((progress.correctAnswers / progress.totalAttempted) * 100)
+                 
+                  {userStats.totalAttempted > 0
+                    ? Math.round((userStats.totalAttempted / userStats.totalCorrect) * 100)
                     : 0}%
                 </div>
+              }
                 <p className="text-sm opacity-80">Accuracy Rate</p>
               </div>
             </div>
+
+            {/* Full Test Section */}
+            <div className="max-w-5xl mx-auto mt-8 bg-library-wood text-library-paper p-6 rounded-lg shadow-md flex items-center justify-between">
+
+            </div>
+
+
 
           </div>
         )}
@@ -535,13 +564,12 @@ const App: React.FC = () => {
                   question={currentQuestion}
                   onNext={handleQuestionComplete}
                 />
-                {/* Tutor Chat Integration */}
-                {/* <TutorChat question={currentQuestion} /> */}
+
               </>
             ) : null}
           </div>
         )}
-      
+
       </main>
       <Footer />
 
