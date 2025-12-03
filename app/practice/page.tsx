@@ -18,7 +18,12 @@ const PracticePage: React.FC = () => {
 
   useEffect(() => {
     // If we land on this page and there's no current question, fetch one
-    if (!currentQuestion && !loading && selectedCategory && selectedDifficulty) {
+    console.log("In practice page")
+    console.log("Current question: ", currentQuestion);
+    console.log("Selected Cateogry: ", selectedCategory);
+    console.log("Current question: ", selectedDifficulty);
+    if (!currentQuestion && selectedCategory && selectedDifficulty) {
+      console.log("actually fetching question")
       fetchNewQuestion(selectedCategory, selectedDifficulty);
     }
   }, [currentQuestion, loading, selectedCategory, selectedDifficulty, fetchNewQuestion]);
