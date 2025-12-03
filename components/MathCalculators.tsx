@@ -63,7 +63,7 @@ export default function MathCalculators() {
   }, [n, r]);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white space-y-12">
+    <div className="max-w-6xl mx-auto p-6 bg-white space-y-12">
       {/* Triangle Calculator */}
       <div>
         <h3 className="text-2xl font-semibold mb-4">Right angled triangle</h3>

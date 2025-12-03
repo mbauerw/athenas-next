@@ -33,14 +33,49 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onNext }) 
     }
   };
 
+  /**
+   * Robust math formatter.
+   * Protects complex LaTeX structures (like \frac{a}{b}) by wrapping them first,
+   * then handling simpler symbols, to prevents broken nesting.
+   */
   const formatMathText = (text: string) => {
     if (!text) return "";
-    let formatted = text.replace(/\b([a-zA-Z0-9]+)\^([a-zA-Z0-9\{\}]+)\b/g, "$$$1^$2$$");
+    
+    // We use a placeholder system to protect matched LaTeX blocks from being
+    // corrupted by subsequent regex replacements (like exponents).
+    const placeholders: string[] = [];
+    let formatted = text;
+
+    // 1. Capture and protect Fractions: \frac{...}{...}
+    // Matches \frac followed by two groups of braces (non-recursive)
+    formatted = formatted.replace(/\\frac\s*\{[^{}]*\}\s*\{[^{}]*\}/g, (m) => {
+      placeholders.push(`$${m}$`);
+      return `___MATH_${placeholders.length - 1}___`;
+    });
+    
+    // 2. Capture and protect Square Roots: \sqrt{...}
+    formatted = formatted.replace(/\\sqrt\s*\{[^{}]*\}/g, (m) => {
+      placeholders.push(`$${m}$`);
+      return `___MATH_${placeholders.length - 1}___`;
+    });
+
+    // 3. Handle exponents in the remaining text (e.g. x^2)
+    formatted = formatted.replace(/\b([a-zA-Z0-9]+)\^([a-zA-Z0-9\{\}]+)\b/g, "$$$1^$2$$");
+
+    // 4. Handle standalone symbols (e.g. \leq, \pi) in remaining text
     formatted = formatted.replace(
-      /(\\(?:leq|geq|neq|approx|cdot|times|div|pm|mp|pi|theta|alpha|beta|gamma|delta|sigma|infty|sqrt|frac|sum|prod))/g,
+      /(\\(?:leq|geq|neq|approx|cdot|times|div|pm|mp|pi|theta|alpha|beta|gamma|delta|sigma|infty|sum|prod))/g,
       (match) => `$${match}$`
     );
+
+    // 5. Restore the protected blocks
+    placeholders.forEach((ph, i) => {
+      formatted = formatted.replace(`___MATH_${i}___`, ph);
+    });
+
+    // 6. Cleanup any double $$ that might have occurred at boundaries
     formatted = formatted.replace(/\$\$/g, "$");
+
     return formatted;
   };
 
@@ -72,12 +107,9 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onNext }) 
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* --- ADDED STYLE BLOCK START --- */}
-      {/* This forces KaTeX to use the same font size as the surrounding text (1em) */}
       <style>{`
         .katex { font-size: 1em !important; }
       `}</style>
-      {/* --- ADDED STYLE BLOCK END --- */}
 
       <div className="bg-white p-8 rounded-lg shadow-lg border border-library-paperDark relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-2 bg-library-gold"></div>

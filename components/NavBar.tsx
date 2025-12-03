@@ -1,38 +1,40 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, Book, PenTool, GraduationCap, Users, FileText, Coffee, Bookmark, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 type NavSection = 'Quizzes' | 'Practice' | 'Tests' | 'Forum';
 
 interface NavLink {
   label: string;
   icon: React.ReactNode;
+  path: string;
 }
 
 export const NAV_DATA: Record<NavSection, NavLink[]> = {
   Quizzes: [
-    { label: "Daily Vocabulary Blitz", icon: <Book size={18} /> },
-    { label: "Quant Quick Fire", icon: <Target size={18} /> },
-    { label: "Sentence Equivalence Challenge", icon: <FileText size={18} /> },
-    { label: "Data Interpretation Drills", icon: <Target size={18} /> },
+    { label: "Daily Vocabulary Blitz", icon: <Book size={18}/>, path: "/"  },
+    { label: "Quant Quick Fire", icon: <Target size={18} />, path: "/" },
+    { label: "Sentence Equivalence Challenge", icon: <FileText size={18} />, path: "/" },
+    { label: "Data Interpretation Drills", icon: <Target size={18} />, path: "/" },
   ],
   Practice: [
-    { label: "Adaptive Verbal Section", icon: <Book size={18} /> },
-    { label: "Adaptive Quant Section", icon: <Target size={18} /> },
-    { label: "Analytical Writing Essay", icon: <PenTool size={18} /> },
-    { label: "Review Flagged Questions", icon: <Bookmark size={18} /> },
+    { label: "Adaptive Verbal Section", icon: <Book size={18} />, path: "/" },
+    { label: "Adaptive Quant Section", icon: <Target size={18} />, path: "/" },
+    { label: "Analytical Writing Essay", icon: <PenTool size={18} />, path: "/" },
+    { label: "Review Flagged Questions", icon: <Bookmark size={18} />, path: "/" },
   ],
   Tests: [
-    { label: "Full-Length Mock Test 1", icon: <GraduationCap size={18} /> },
-    { label: "Full-Length Mock Test 2", icon: <GraduationCap size={18} /> },
-    { label: "Diagnostic Test", icon: <FileText size={18} /> },
-    { label: "Section-Adaptive Preview", icon: <Target size={18} /> },
+    { label: "Full-Length Mock Test 1", icon: <GraduationCap size={18} />, path: "/" },
+    { label: "Full-Length Mock Test 2", icon: <GraduationCap size={18} />, path: "/" },
+    { label: "Diagnostic Test", icon: <FileText size={18} />, path: "/" },
+    { label: "Section-Adaptive Preview", icon: <Target size={18} />, path: "/" },
   ],
   Forum: [
-    { label: "General Discussion", icon: <Users size={18} /> },
-    { label: "Study Groups", icon: <Coffee size={18} /> },
-    { label: "Exam Strategy & Tips", icon: <GraduationCap size={18} /> },
-    { label: "Admissions Advice", icon: <FileText size={18} /> },
+    { label: "General Discussion", icon: <Users size={18} />, path: "/" },
+    { label: "Study Groups", icon: <Coffee size={18} />, path: "/" },
+    { label: "Exam Strategy & Tips", icon: <GraduationCap size={18} />, path: "/" },
+    { label: "Formula Playground", icon: <FileText size={18} />, path: "/resources/formula-playground"  },
   ]
 };
 
@@ -90,9 +92,10 @@ export const NavBar: React.FC = () => {
               {/* Column 2 & 3: Links */}
               <div className="col-span-2 grid grid-cols-2 gap-4">
                 {NAV_DATA[activeMenu].map((link, idx) => (
-                  <a 
+                  <Link
                     key={idx} 
-                    href="#" 
+                    to={link.path}
+                    onClick={() => setActiveMenu(null)}  
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-library-wood/5 transition-colors group"
                   >
                     <div className="text-library-woodLight group-hover:text-library-wood transition-colors">
@@ -101,7 +104,7 @@ export const NavBar: React.FC = () => {
                     <span className="font-sans font-semibold text-library-ink group-hover:text-library-wood transition-colors">
                       {link.label}
                     </span>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>

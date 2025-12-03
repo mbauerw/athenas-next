@@ -48,7 +48,7 @@ const StatCard: React.FC<StatCardProps> = ({
               {isMain && (
                 <motion.div
                   animate={{ rotate: isExpanded ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: .6 }}
                 >
                   <ChevronDown size={18} className="opacity-70" />
                 </motion.div>
@@ -88,14 +88,15 @@ const listVariants: Variants = {
   expanded: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
-      when: "beforeChildren"
+      staggerChildren: .2,
+      when: "beforeChildren",
+      duration: .4
     }
   },
   collapsed: {
     opacity: 0,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.2,
       staggerDirection: -1,
       when: "afterChildren",
       duration: 0.4 // Quick fade out for container after children collapse

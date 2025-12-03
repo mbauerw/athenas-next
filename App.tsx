@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase';
 import { Dashboard } from './pages/Dashboard';
 import { QuestionPage } from './pages/QuestionPage';
 import { AuthPage } from './pages/AuthPage';
+import { FormulaPlayground } from './pages/FormulaPlayground';
 
 // --- Initial State ---
 const initialProgress: UserProgress = {
@@ -319,8 +320,11 @@ const AppContent: React.FC = () => {
             <AuthPage
               onSuccess={() => navigate('/')}
               onCancel={() => navigate('/')}
-            />
-          } />
+            />} />
+          <Route path="/resources/formula-playground" element={
+            <FormulaPlayground/>
+            } />
+          
         </Routes>
       </main>
       <Footer />

@@ -6,7 +6,7 @@ import { Category, Difficulty, UserProgress, MAX_QUESTIONS_PER_LEVEL, UserProgre
 import { Button } from '../components/Button';
 import { ProgressBar } from '../components/ProgressBar';
 import ProgressStats from '../components/ProgressStats';
-import MathCalculators from '../components/TriangeArea';
+import MathCalculators from '../components/MathCalculators';
 
 interface DashboardProps {
   authUser: User | null;
@@ -212,7 +212,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, progress, userSt
           </div>
 
         </div>
-        <MathCalculators />
+        {/* <MathCalculators /> */}
       </div>
       <div>
 
