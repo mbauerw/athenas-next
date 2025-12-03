@@ -88,18 +88,18 @@ const listVariants: Variants = {
   expanded: {
     opacity: 1,
     transition: {
-      staggerChildren: .2,
+      staggerChildren: .3,
       when: "beforeChildren",
-      duration: .4
+      duration: 0
     }
   },
   collapsed: {
     opacity: 0,
     transition: {
-      staggerChildren: 0.2,
+      staggerChildren: 0.3,
       staggerDirection: -1,
       when: "afterChildren",
-      duration: 0.4 // Quick fade out for container after children collapse
+      duration: 0 // Quick fade out for container after children collapse
     }
   }
 };
