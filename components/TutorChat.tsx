@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Chat } from "@google/genai";
-import { MessageCircle, X, Send, User, Bot, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageCircle, Minimize2, Send, Bot } from 'lucide-react';
 import { Question } from '../types';
 import { createTutorChat } from '../services/geminiService';
-import { Button } from './Button';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 interface TutorChatProps {
   question: Question;
@@ -22,7 +25,6 @@ export const TutorChat: React.FC<TutorChatProps> = ({ question }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize chat when question changes
   useEffect(() => {
     setChatSession(createTutorChat(question));
     setMessages([{
@@ -30,9 +32,8 @@ export const TutorChat: React.FC<TutorChatProps> = ({ question }) => {
       text: "Greetings, scholar. I am the Head Librarian. If you require assistance breaking down this problem, simply ask."
     }]);
     setInputValue('');
-  }, [question.id]);
+  }, [question.question_id]);
 
-  // Scroll to bottom on new message
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -87,8 +88,8 @@ export const TutorChat: React.FC<TutorChatProps> = ({ question }) => {
       style={{ zIndex: 9999 }}
       className="fixed bottom-6 right-6 w-[90vw] md:w-[400px] h-[500px] bg-white rounded-lg shadow-2xl border-2 border-library-wood flex flex-col overflow-hidden animate-fade-in"
     >
-      {/* Header */}
-      <div className="bg-library-wood text-library-paper p-4 flex justify-between items-center border-b-4 border-library-gold">
+      {/* Header - added flex-shrink-0 to prevent squishing */}
+      <div className="flex-shrink-0 bg-library-wood text-library-paper p-4 flex justify-between items-center border-b-4 border-library-gold">
         <div className="flex items-center gap-2">
           <div className="bg-library-paper p-1.5 rounded-full text-library-wood">
             <Bot size={20} />
@@ -106,21 +107,33 @@ export const TutorChat: React.FC<TutorChatProps> = ({ question }) => {
         </button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-grow overflow-y-auto p-4 bg-library-paper space-y-4">
+      {/* Messages - added min-h-0 to force scrolling instead of growing */}
+      <div className="flex-grow min-h-0 overflow-y-auto p-4 bg-library-paper space-y-4">
         {messages.map((msg, idx) => (
           <div 
             key={idx} 
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div 
-              className={`max-w-[85%] p-3 rounded-lg text-sm leading-relaxed shadow-sm ${
+              className={`max-w-[85%] p-3 rounded-lg text-sm leading-relaxed shadow-sm break-words overflow-hidden ${
                 msg.role === 'user' 
                   ? 'bg-library-woodLight text-white rounded-br-none' 
                   : 'bg-white text-library-ink border border-library-paperDark rounded-bl-none'
               }`}
             >
-              {msg.text}
+              <ReactMarkdown
+                remarkPlugins={[remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+                components={{
+                  a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="underline" />,
+                  p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
+                  // Handle lists to ensure they don't break layout
+                  ul: ({node, ...props}) => <ul {...props} className="list-disc pl-4 mb-2" />,
+                  ol: ({node, ...props}) => <ol {...props} className="list-decimal pl-4 mb-2" />,
+                }}
+              >
+                {msg.text}
+              </ReactMarkdown>
             </div>
           </div>
         ))}
@@ -136,8 +149,8 @@ export const TutorChat: React.FC<TutorChatProps> = ({ question }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-4 bg-white border-t border-library-paperDark">
+      {/* Input - added flex-shrink-0 to keep it stable */}
+      <div className="flex-shrink-0 p-4 bg-white border-t border-library-paperDark">
         {messages.length === 1 && (
           <div className="mb-3 flex gap-2 overflow-x-auto pb-2">
             <button 

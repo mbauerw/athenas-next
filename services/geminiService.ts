@@ -3,8 +3,6 @@ import { Category, Difficulty, Question } from "../types";
 import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 
-
-
 const getClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
@@ -86,9 +84,11 @@ export const generateQuestion = async (
     It can be Sentence Equivalence, Text Completion, or Reading Comprehension. 
     Ensure the vocabulary is appropriate for GRE level.`;
   } else {
+    // UPDATED PROMPT: Explicit instruction on LaTeX/JSON string safety
     promptText = `Generate a ${difficulty} level GRE Quantitative Reasoning question.
     It can be Arithmetic, Algebra, Geometry, or Data Analysis.
-    Ensure the math is strictly text-based or uses standard unicode symbols for clarity.`;
+    IMPORTANT: For any mathematical symbols or LaTeX, you MUST double-escape backslashes to ensure valid JSON (e.g., use "\\\\frac" instead of "\\frac"). 
+    Do not use unescaped double quotes inside the text strings.`;
   }
 
   try {
@@ -98,7 +98,8 @@ export const generateQuestion = async (
       config: {
         responseMimeType: "application/json",
         responseSchema: questionSchema,
-        systemInstruction: "You are an expert GRE tutor. Generate high-quality, accurate practice questions similar to official ETS material.",
+        // UPDATED INSTRUCTION: Forcing raw JSON and preventing markdown wrapping
+        systemInstruction: "You are an expert GRE tutor. Output ONLY valid, parseable JSON. Do not wrap the output in markdown code blocks (like ```json). Ensure all strings are properly escaped.",
       },
     });
 
@@ -107,19 +108,28 @@ export const generateQuestion = async (
       throw new Error("No content generated from Gemini.");
     }
 
-    const jsonResponse = JSON.parse(text);
-    console.log("Retrieved AI question")
+    // --- FIX: Sanitize the output before parsing ---
+    // Remove markdown code blocks if the AI decided to add them anyway
+    const cleanedText = text.replace(/^```json\s*/, "").replace(/^```\s*/, "").replace(/\s*```$/, "");
 
-    return {
-      question_id: 0,
-      text: jsonResponse.text,
-      options: jsonResponse.options,
-      correct_index: jsonResponse.correct_index,
-      explanation: jsonResponse.explanation,
-      category,
-      difficulty,
-      topic: jsonResponse.topic || "General"
-    };
+    try {
+      const jsonResponse = JSON.parse(cleanedText);
+      console.log("Retrieved AI question");
+
+      return {
+        question_id: 0,
+        text: jsonResponse.text,
+        options: jsonResponse.options,
+        correct_index: jsonResponse.correct_index,
+        explanation: jsonResponse.explanation,
+        category,
+        difficulty,
+        topic: jsonResponse.topic || "General"
+      };
+    } catch (parseError) {
+      console.error("JSON Parse Error. Raw text from AI:", cleanedText);
+      throw parseError;
+    }
 
   } catch (error) {
     console.error("Error generating question:", error);

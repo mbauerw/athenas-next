@@ -296,7 +296,10 @@ export const getUserProgressStats = async (
   userId: number,
   category?: Category 
 ): Promise<UserProgressStats | null> => {
-  if (!supabase) return null;
+  if (!supabase){
+    console.log('no supabase get user progres')
+    return null;
+  } 
 
   let query = supabase
     .from('user_progress')

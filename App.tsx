@@ -25,6 +25,9 @@ import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
 import { supabase } from '@/lib/supabase';
 import { QuantQuiz } from './pages/QuantQuiz';
+import ProgressStats from './components/ProgressStats';
+import RightTriangleCalculator from './components/TriangeArea';
+import MathCalculators from './components/TriangeArea';
 
 // --- Initial State ---
 const initialProgress: UserProgress = {
@@ -52,7 +55,7 @@ const floatingAnimationSlow = {
     transition: {
       duration: 5,
       repeat: Infinity,
-      ease: "easeInOut",
+      ease: "easeInOut" as const,
       delay: 0.5
     }
   }
@@ -64,7 +67,7 @@ const floatingAnimationGentle = {
     transition: {
       duration: 12.5,
       repeat: Infinity,
-      ease: "easeInOut",
+      ease: "easeInOut" as const,
       delay: 1
     }
   }
@@ -152,7 +155,16 @@ const App: React.FC = () => {
     initDb();
   }, []);
 
+  useEffect(() => {
 
+    if (!userId) return;
+    const getStats = async () => {
+      const total = await getUserProgressStats(userId)
+      setUserStats(total);
+    }
+    getStats();
+
+  }, [userId, sessionId, authUser])
 
   // --- Handlers ---
 
@@ -201,14 +213,15 @@ const App: React.FC = () => {
       if (userId && dbConnected) {
         console.log("Saving question to DB")
         try {
-          const dbQId = await saveQuestionToDb(question);
+          const dbQId = saveQuestionToDb(question);
           if (dbQId) {
-            question.question_id = dbQId;
+            question.question_id = await dbQId;
           }
         } catch (error) {
           console.log('saving to db error: ', error);
         }
 
+      console.log("Saved to DB")
 
       }
 
@@ -243,9 +256,7 @@ const App: React.FC = () => {
         await saveUserAnswer(userId, sessionId, qId, questionToSave, selectedIndex);
         const total = await getUserProgressStats(userId)
         setUserStats(total);
-
       }
-
 
       console.log("fetching new question from handleQuestionComplete");
       await fetchNewQuestion(selectedCategory, selectedDifficulty);
@@ -287,58 +298,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
 
-      {/* --- Background Image for Homepage --- */}
-      {view === 'dashboard' && (
-        <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-          {/* <motion.div 
-          className="absolute top-[60vh] left-[2vw] z-0"
-          {...floatingAnimation}
-        >
-          <img
-            src="/books-horizontal.png"
-            alt="Library background"
-            className="w-[400px] h-[300px] opacity-100 sepia-[.1]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
-        </motion.div> */}
 
-          <motion.div
-            className="absolute top-[60vh] -left-[15vw] z-0"
-            {...floatingAnimationSlow}
-          >
-            <img
-              src="/male-reader-left.png"
-              alt="Library background"
-              className="w-[400px] h-[400px] opacity-90 sepia-[.1]"
-            />
-            <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
-          </motion.div>
-
-          <motion.div
-            className="absolute top-[70vh] left-[80vw] -mr-20 z-0"
-            {...floatingAnimationGentle}
-          >
-            <img
-              src="/female-reader-1.png"
-              alt="Library background"
-              className="w-[400px] h-[280px] opacity-100 sepia-[.1]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
-          </motion.div>
-
-          {/* <motion.div 
-          className="absolute bottom-[10vh] left-[50vw] z-0"
-          {...floatingAnimationDelayed}
-        >
-          <img
-            src="/books-horizontal.png"
-            alt="Library background"
-            className="w-[400px] h-[300px] opacity-90 sepia-[.1]"
-          />
-          <div className="absolute bg-gradient-to-b from-library-paper/10 via-library-paper/20 to-library-paper/10" ></div>
-        </motion.div> */}
-        </div>
-      )}
       {/* --- Navigation / Header --- */}
       <header className="bg-library-wood text-white shadow-lg sticky top-0 z-50 border-b-4 border-library-gold relative">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -386,7 +346,7 @@ const App: React.FC = () => {
 
 
       {/* --- Main Content --- */}
-      <main className="flex-grow container mx-auto px-4 py-8 pb-0 relative z-10">
+      <main className="flex-grow container mx-auto px-4 py-8 pb-0 relative">
 
         {view === 'auth' && (
           <div className="min-h-[60vh] flex items-center justify-center">
@@ -399,142 +359,182 @@ const App: React.FC = () => {
 
         {view === 'dashboard' && (
           // --- Dashboard View ---
-          <div className="animate-fade-in">
-            {/* <QuantQuiz></QuantQuiz>  */}
-            <div className="text-center mb-12 pt-8">
-              <div className="inline-block bg-library-paper/80 backdrop-blur-sm p-6 rounded-lg shadow-sm border border-library-wood/10">
-                <h2 className="text-4xl font-serif font-bold text-library-wood mb-4">
-                  Welcome, {authUser ? (authUser.user_metadata.first_name || 'Scholar') : 'Guest Scholar'}.
-                </h2>
-                <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
-                  The archives contain 300 adaptive questions.
-                  {authUser ? " Your progress is being recorded in the university registry." : " Sign in to permanently save your progress across sessions."}
-                </p>
-              </div>
+          <div className="animate-fade-in relative">
+            {/* --- Background Images --- */}
+            <div className='absolute inset-0 pointer-events-none z-10'>
+              <motion.div
+                className="absolute top-1/4 -left-[12vw]"
+                {...floatingAnimationSlow}
+              >
+                <img
+                  src="/male-reader-left.png"
+                  alt="Library background"
+                  className="w-[380px] h-[350px] opacity-90 sepia-[.1]"
+                />
+              </motion.div>
+
+              <motion.div
+                className="absolute top-[33%] -right-[10%]"
+                {...floatingAnimationGentle}
+              >
+                <img
+                  src="/female-reader-1.png"
+                  alt="Library background"
+                  className="w-[300px] h-[200px] opacity-100 sepia-[.1]"
+                />
+              </motion.div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* --- Content --- */}
+            <div className="relative z-10">
+              <div className="text-center mb-12 pt-8">
+                <div className="inline-block bg-library-paper/80 backdrop-blur-sm p-6 rounded-lg shadow-sm border border-library-wood/10">
+                  <h2 className="text-4xl font-serif font-bold text-library-wood mb-4">
+                    Welcome, {authUser ? (authUser.user_metadata.first_name || 'Scholar') : 'Guest Scholar'}.
+                  </h2>
+                  <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
+                    The archives contain 300 adaptive questions.
+                    {authUser ? " Your progress is being recorded in the university registry." : " Sign in to permanently save your progress across sessions."}
+                  </p>
+                </div>
+              </div>
 
-              {/* Verbal Section */}
-              <div className="bg-white p-8 rounded-lg shadow-lg border-t-8 border-amber-700">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="bg-amber-100 p-3 rounded-full text-amber-800">
-                    <BookOpen size={32} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+
+                {/* Verbal Section */}
+                <div className="bg-white p-8 rounded-lg shadow-lg border-t-8 border-amber-700">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="bg-amber-100 p-3 rounded-full text-amber-800">
+                      <BookOpen size={32} />
+                    </div>
+                    <h3 className="text-2xl font-serif font-bold text-library-wood">Verbal Reasoning</h3>
                   </div>
-                  <h3 className="text-2xl font-serif font-bold text-library-wood">Verbal Reasoning</h3>
-                </div>
 
-                <div className="space-y-4 mb-8">
-                  <ProgressBar
-                    label="Easy Collection"
-                    current={progress.verbal.easy}
-                    max={MAX_QUESTIONS_PER_LEVEL}
-                    colorClass="bg-green-600"
-                  />
-                  <ProgressBar
-                    label="Medium Collection"
-                    current={progress.verbal.medium}
-                    max={MAX_QUESTIONS_PER_LEVEL}
-                    colorClass="bg-yellow-600"
-                  />
-                  <ProgressBar
-                    label="Hard Collection"
-                    current={progress.verbal.hard}
-                    max={MAX_QUESTIONS_PER_LEVEL}
-                    colorClass="bg-red-700"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <Button onClick={() => startPractice(Category.VERBAL, Difficulty.EASY)} className="text-sm">
-                    Practice Easy
-                  </Button>
-                  <Button onClick={() => startPractice(Category.VERBAL, Difficulty.MEDIUM)} className="text-sm">
-                    Practice Medium
-                  </Button>
-                  <Button onClick={() => startPractice(Category.VERBAL, Difficulty.HARD)} className="text-sm">
-                    Practice Hard
-                  </Button>
-                </div>
-              </div>
-
-              {/* Quant Section */}
-              <div className="bg-white p-8 rounded-lg shadow-lg border-t-8 border-library-green">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="bg-green-100 p-3 rounded-full text-green-800">
-                    <TrendingUp size={32} />
+                  <div className="space-y-4 mb-8">
+                    <ProgressBar
+                      label="Easy Collection"
+                      current={progress.verbal.easy}
+                      max={MAX_QUESTIONS_PER_LEVEL}
+                      colorClass="bg-green-600"
+                    />
+                    <ProgressBar
+                      label="Medium Collection"
+                      current={progress.verbal.medium}
+                      max={MAX_QUESTIONS_PER_LEVEL}
+                      colorClass="bg-yellow-600"
+                    />
+                    <ProgressBar
+                      label="Hard Collection"
+                      current={progress.verbal.hard}
+                      max={MAX_QUESTIONS_PER_LEVEL}
+                      colorClass="bg-red-700"
+                    />
                   </div>
-                  <h3 className="text-2xl font-serif font-bold text-library-wood">Quantitative Reasoning</h3>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <Button onClick={() => startPractice(Category.VERBAL, Difficulty.EASY)} className="text-sm">
+                      Practice Easy
+                    </Button>
+                    <Button onClick={() => startPractice(Category.VERBAL, Difficulty.MEDIUM)} className="text-sm">
+                      Practice Medium
+                    </Button>
+                    <Button onClick={() => startPractice(Category.VERBAL, Difficulty.HARD)} className="text-sm">
+                      Practice Hard
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="space-y-4 mb-8">
-                  <ProgressBar
-                    label="Easy Collection"
-                    current={progress.quant.easy}
-                    max={MAX_QUESTIONS_PER_LEVEL}
-                    colorClass="bg-green-600"
-                  />
-                  <ProgressBar
-                    label="Medium Collection"
-                    current={progress.quant.medium}
-                    max={MAX_QUESTIONS_PER_LEVEL}
-                    colorClass="bg-yellow-600"
-                  />
-                  <ProgressBar
-                    label="Hard Collection"
-                    current={progress.quant.hard}
-                    max={MAX_QUESTIONS_PER_LEVEL}
-                    colorClass="bg-red-700"
-                  />
+                {/* Quant Section */}
+                <div className="bg-white p-8 rounded-lg shadow-lg border-t-8 border-library-green">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="bg-green-100 p-3 rounded-full text-green-800">
+                      <TrendingUp size={32} />
+                    </div>
+                    <h3 className="text-2xl font-serif font-bold text-library-wood">Quantitative Reasoning</h3>
+                  </div>
+
+                  <div className="space-y-4 mb-8">
+                    <ProgressBar
+                      label="Easy Collection"
+                      current={progress.quant.easy}
+                      max={MAX_QUESTIONS_PER_LEVEL}
+                      colorClass="bg-green-600"
+                    />
+                    <ProgressBar
+                      label="Medium Collection"
+                      current={progress.quant.medium}
+                      max={MAX_QUESTIONS_PER_LEVEL}
+                      colorClass="bg-yellow-600"
+                    />
+                    <ProgressBar
+                      label="Hard Collection"
+                      current={progress.quant.hard}
+                      max={MAX_QUESTIONS_PER_LEVEL}
+                      colorClass="bg-red-700"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <Button onClick={() => startPractice(Category.QUANT, Difficulty.EASY)} className="text-sm">
+                      Practice Easy
+                    </Button>
+                    <Button onClick={() => startPractice(Category.QUANT, Difficulty.MEDIUM)} className="text-sm">
+                      Practice Medium
+                    </Button>
+                    <Button onClick={() => startPractice(Category.QUANT, Difficulty.HARD)} className="text-sm">
+                      Practice Hard
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <Button onClick={() => startPractice(Category.QUANT, Difficulty.EASY)} className="text-sm">
-                    Practice Easy
-                  </Button>
-                  <Button onClick={() => startPractice(Category.QUANT, Difficulty.MEDIUM)} className="text-sm">
-                    Practice Medium
-                  </Button>
-                  <Button onClick={() => startPractice(Category.QUANT, Difficulty.HARD)} className="text-sm">
-                    Practice Hard
-                  </Button>
-                </div>
               </div>
 
-            </div>
+              <ProgressStats userStats={userStats} />
 
-            {/* Overall Stats */}
-            <div className="max-w-5xl mx-auto mt-8 bg-library-wood text-library-paper p-6 rounded-lg shadow-md flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <GraduationCap size={40} />
-                <div>
-                  <h4 className="text-xl font-serif font-bold">Total Progress</h4>
-                  {userStats &&
-                    <p className="text-library-paperDark/80">Questions Attempted: {userStats.totalAttempted} / {userStats.totalQuestions}</p>
-                  }
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-8 max-w-5xl mx-auto p-20 mt-20">
+
+                {/* Full Test Section */}
+                <div className="bg-white p-8 rounded-lg shadow-lg border-t-8 border-amber-700">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <div className="bg-amber-100 p-3 rounded-full text-amber-800">
+                      <BookOpen size={32} />
+                    </div>
+                    <h3 className="text-4xl font-serif font-bold text-library-wood">Take the Full Test</h3>
+                  </div>
+
+                  <div className="space-y-4 mb-8">
+                    <div className="grid md:grid-cols-2 grid-cols-1">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <div className="bg-amber-100 p-3 rounded-full text-amber-800">
+                          <BookOpen size={32} />
+                        </div>
+                        <h3 className="text-2xl font-serif font-bold text-center text-library-wood">55 Quantitative <br/> Reasoning</h3>
+                      </div>
+                      <div className="flex items-center justify-center gap-4 mb-6">
+                        <div className="bg-amber-100 p-3 rounded-full text-amber-800">
+                          <BookOpen size={32} />
+                        </div>
+                        <h3 className="text-2xl font-serif font-bold text-center text-library-wood">55 Verbal <br/> Reasoning</h3>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div></div>
+                    <Button onClick={() => startPractice(Category.VERBAL, Difficulty.MEDIUM)} className="text-lg">
+                      Start Test
+                    </Button>
+                    <div></div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-              {userStats &&
-                  
-                <div className="text-3xl font-bold font-serif">
-                 
-                  {userStats.totalAttempted > 0
-                    ? Math.round((userStats.totalAttempted / userStats.totalCorrect) * 100)
-                    : 0}%
-                </div>
-              }
-                <p className="text-sm opacity-80">Accuracy Rate</p>
-              </div>
-            </div>
 
-            {/* Full Test Section */}
-            <div className="max-w-5xl mx-auto mt-8 bg-library-wood text-library-paper p-6 rounded-lg shadow-md flex items-center justify-between">
+              </div>
+              <MathCalculators />
+            </div>
+            <div>
 
             </div>
-
-
-
           </div>
         )}
 
