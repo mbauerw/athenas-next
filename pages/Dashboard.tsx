@@ -17,9 +17,9 @@ interface DashboardProps {
 
 const floatingAnimationSlow = {
   animate: {
-    y: [0, -8, 0],
+    y: [0, -15, 0],
     transition: {
-      duration: 5,
+      duration: 15,
       repeat: Infinity,
       ease: "easeInOut" as const,
       delay: 0.5
@@ -29,7 +29,7 @@ const floatingAnimationSlow = {
 
 const floatingAnimationGentle = {
   animate: {
-    y: [0, -10, 0],
+    y: [0, -15, 0],
     transition: {
       duration: 12.5,
       repeat: Infinity,
