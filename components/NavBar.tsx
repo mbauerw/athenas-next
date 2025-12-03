@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, Book, PenTool, GraduationCap, Users, FileText, Coffee, Bookmark, Target } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 type NavSection = 'Quizzes' | 'Practice' | 'Tests' | 'Forum';
 
@@ -93,9 +93,9 @@ export const NavBar: React.FC = () => {
               <div className="col-span-2 grid grid-cols-2 gap-4">
                 {NAV_DATA[activeMenu].map((link, idx) => (
                   <Link
-                    key={idx} 
-                    to={link.path}
-                    onClick={() => setActiveMenu(null)}  
+                    key={idx}
+                    href={link.path}
+                    onClick={() => setActiveMenu(null)}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-library-wood/5 transition-colors group"
                   >
                     <div className="text-library-woodLight group-hover:text-library-wood transition-colors">

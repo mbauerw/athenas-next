@@ -1,4 +1,4 @@
-import { SEED_QUESTIONS } from "./data/seedQuestions.ts";
+import { SEED_QUESTIONS } from "./data/seedQuestions";
 
 function filterQuant() {
   let i = 0

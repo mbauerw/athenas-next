@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 export default function MathCalculators() {
   const [legA, setLegA] = useState('');
   const [legB, setLegB] = useState('');
-  const [area, setArea] = useState(null);
+  const [area, setArea] = useState<number | null>(null);
 
   const [n, setN] = useState('');
   const [r, setR] = useState('');
-  const [combination, setCombination] = useState(null);
-  const [permutation, setPermutation] = useState(null);
+  const [combination, setCombination] = useState<number | null>(null);
+  const [permutation, setPermutation] = useState<number | null>(null);
 
   const calculateArea = () => {
     const a = parseFloat(legA);
@@ -22,7 +22,7 @@ export default function MathCalculators() {
     }
   };
 
-  const factorial = (num) => {
+  const factorial = (num: number): number | null => {
     if (num < 0) return null;
     if (num === 0 || num === 1) return 1;
     let result = 1;
@@ -35,19 +35,25 @@ export default function MathCalculators() {
   const calculateCombinationAndPermutation = () => {
     const nVal = parseInt(n);
     const rVal = parseInt(r);
-    
+
     if (!isNaN(nVal) && !isNaN(rVal) && nVal >= 0 && rVal >= 0 && rVal <= nVal) {
       // Permutation: P(n,r) = n! / (n-r)!
       const nFactorial = factorial(nVal);
       const nMinusRFactorial = factorial(nVal - rVal);
-      const perm = nFactorial / nMinusRFactorial;
-      
-      // Combination: C(n,r) = n! / (r! * (n-r)!)
       const rFactorial = factorial(rVal);
-      const comb = nFactorial / (rFactorial * nMinusRFactorial);
-      
-      setPermutation(perm);
-      setCombination(comb);
+
+      if (nFactorial !== null && nMinusRFactorial !== null && rFactorial !== null) {
+        const perm = nFactorial / nMinusRFactorial;
+
+        // Combination: C(n,r) = n! / (r! * (n-r)!)
+        const comb = nFactorial / (rFactorial * nMinusRFactorial);
+
+        setPermutation(perm);
+        setCombination(comb);
+      } else {
+        setPermutation(null);
+        setCombination(null);
+      }
     } else {
       setPermutation(null);
       setCombination(null);

@@ -4,7 +4,9 @@ import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 
 const getClient = () => {
-  const apiKey = process.env.API_KEY;
+  // Note: Using NEXT_PUBLIC_ prefix because this runs on the client side
+  // For better security, consider moving AI generation to a Next.js API route
+  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("API Key not found in environment variables.");
   }
