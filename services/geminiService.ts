@@ -1,11 +1,9 @@
 import { GoogleGenAI, Type, Schema, Chat } from "@google/genai";
 import { Category, Difficulty, Question } from "../types";
-import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 
 const getClient = () => {
   // Note: Using NEXT_PUBLIC_ prefix because this runs on the client side
-  // For better security, consider moving AI generation to a Next.js API route
   const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("API Key not found in environment variables.");
@@ -26,8 +24,9 @@ const questionSchema: Schema = {
       description: "A list of 4 or 5 possible answer choices.",
     },
     correct_index: {
-      type: Type.INTEGER,
-      description: "The zero-based index of the correct answer in the options array.",
+      type: Type.ARRAY, // CHANGED: Now accepts an array of integers
+      items: { type: Type.INTEGER },
+      description: "The zero-based indices of the correct answer(s) in the options array.",
     },
     explanation: {
       type: Type.STRING,
@@ -46,37 +45,6 @@ export const generateQuestion = async (
   difficulty: Difficulty
 ): Promise<Question> => {
 
-  // try {
-
-  //   const { data, error } = await supabase.rpc('get_random_question', {
-  //     p_category: category,      // Use the category from your function params
-  //     p_difficulty: difficulty   // Use the difficulty from your function params
-  //   })
-
-  //   console.log("Data is : ", data);
-
-  //   const dbQuestion = data[0]
-
-  //   if (error || !data || data.length === 0) {
-  //     throw new Error("Couldn't get data from db.");
-  //   }
-
-  //   return {
-  //     question_id: dbQuestion.id,
-  //     text: dbQuestion.text,
-  //     options: dbQuestion.options,
-  //     correct_index: dbQuestion.correct_index,
-  //     explanation: dbQuestion.explanation,
-  //     category: dbQuestion.category,
-  //     difficulty: dbQuestion.difficulty,
-  //     topic: dbQuestion.topic || "General"
-  //   };
-
-  // } catch (error) {
-  //   console.log("Couldn't get database.")
-  //   console.log(error);
-  // }
-
   const ai = getClient();
 
   let promptText = "";
@@ -86,7 +54,6 @@ export const generateQuestion = async (
     It can be Sentence Equivalence, Text Completion, or Reading Comprehension. 
     Ensure the vocabulary is appropriate for GRE level.`;
   } else {
-    // UPDATED PROMPT: Explicit instruction on LaTeX/JSON string safety
     promptText = `Generate a ${difficulty} level GRE Quantitative Reasoning question.
     It can be Arithmetic, Algebra, Geometry, or Data Analysis.
     IMPORTANT: For any mathematical symbols or LaTeX, you MUST double-escape backslashes to ensure valid JSON (e.g., use "\\\\frac" instead of "\\frac"). 
@@ -100,7 +67,6 @@ export const generateQuestion = async (
       config: {
         responseMimeType: "application/json",
         responseSchema: questionSchema,
-        // UPDATED INSTRUCTION: Forcing raw JSON and preventing markdown wrapping
         systemInstruction: "You are an expert GRE tutor. Output ONLY valid, parseable JSON. Do not wrap the output in markdown code blocks (like ```json). Ensure all strings are properly escaped.",
       },
     });
@@ -110,7 +76,6 @@ export const generateQuestion = async (
       throw new Error("No content generated from Gemini.");
     }
 
-    // --- FIX: Sanitize the output before parsing ---
     // Remove markdown code blocks if the AI decided to add them anyway
     const cleanedText = text.replace(/^```json\s*/, "").replace(/^```\s*/, "").replace(/\s*```$/, "");
 
@@ -143,6 +108,11 @@ export const generateQuestion = async (
 export const createTutorChat = (question: Question): Chat => {
   const ai = getClient();
 
+  // Helper to format answers like "A" or "A and C"
+  const correctLetters = question.correct_index
+    .map(i => String.fromCharCode(65 + i))
+    .join(', ');
+
   const systemInstruction = `You are a wise and helpful GRE Tutor in a classic university library.
   The student is working on the following ${question.difficulty} ${question.category} question (Topic: ${question.topic}):
   
@@ -151,7 +121,7 @@ export const createTutorChat = (question: Question): Chat => {
   Options:
   ${question.options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join('\n')}
   
-  The correct answer is index ${question.correct_index} (Option ${String.fromCharCode(65 + question.correct_index)}).
+  The correct answer(s): ${correctLetters} (Indices: [${question.correct_index.join(', ')}]).
   The explanation is: ${question.explanation}.
 
   YOUR GOAL:

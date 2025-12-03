@@ -32,6 +32,20 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
   return (
     <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
+      <div
+        className="absolute top-0 left-0 right-0 h-[100vh] pointer-events-none z-0 bg-cover bg-top bg-no-repeat"
+        style={{
+          backgroundImage: "url('/library-athena.png')",
+          maskImage: 'radial-gradient(ellipse 70% 150% at 50% 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 100% at 50% 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
+        }}
+      />
+      <div
+        className="absolute top-0 left-0 right-0 h-[100vh] pointer-events-none z-10"
+        style={{
+          background: 'radial-gradient(circle 35vw at 50% 15%, rgb(69, 106, 254) 0%, rgba(47, 65, 226, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'        }}
+      />
+
       {/* --- Navigation / Header --- */}
       <header className="bg-library-wood text-white shadow-lg sticky top-0 z-50 border-b-4 border-library-gold relative">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -78,7 +92,9 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       </header>
 
       {/* --- Main Content --- */}
-      <main className="flex-grow container mx-auto px-4 py-8 pb-0 relative">
+      <main className="flex-grow container  mx-auto px-4 pb-0 relative"
+      >
+
         {children}
       </main>
       <Footer />

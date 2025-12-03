@@ -13,7 +13,7 @@ export interface Question {
   question_id: number;
   text: string;
   options: string[];
-  correct_index: number;
+  correct_index: number[];
   explanation: string;
   category: Category;
   difficulty: Difficulty;

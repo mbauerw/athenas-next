@@ -11,7 +11,7 @@ interface QuestionPageProps {
   currentQuestion: Question | null;
   selectedCategory: Category | null;
   selectedDifficulty: Difficulty | null;
-  onQuestionComplete: (selectedIndex: number) => void;
+  onQuestionComplete: (selectedIndices: number[]) => void; // CHANGED: number[]
   onRetry: () => void;
 }
 

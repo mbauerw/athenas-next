@@ -1,8 +1,15 @@
 import { createClient, User } from '@supabase/supabase-js';
 import { Question, Category, Difficulty, UserProgressStats } from '../types';
-import { SEED_QUESTIONS } from '../data/seedQuestions'; // Assuming this is where your seed data lives based on file list
-// If using the other seed file, adjust import accordingly. 
+import { SEED_QUESTIONS } from '../data/seedQuestions'; 
 import { supabase } from '@/lib/supabase'
+
+// --- Helper ---
+const arraysEqual = (a: number[], b: number[]) => {
+  if (a.length !== b.length) return false;
+  const sortedA = [...a].sort((x, y) => x - y);
+  const sortedB = [...b].sort((x, y) => x - y);
+  return sortedA.every((val, index) => val === sortedB[index]);
+};
 
 // --- Auth Functions ---
 
@@ -155,7 +162,7 @@ export const startSession = async (userId: number, category: Category): Promise<
   const { data, error } = await supabase.from('practice_sessions').insert({
     user_id: userId,
     session_type: 'practice',
-    target_category: category, // Updated to match schema
+    target_category: category,
     started_at: new Date().toISOString()
   }).select('session_id').single();
 
@@ -183,7 +190,7 @@ export const saveQuestionToDb = async (question: Question): Promise<number | nul
     const { data: qData, error } = await supabase.from('questions').insert({
       text: question.text,
       options: question.options,
-      correct_index: question.correct_index,
+      correct_index: question.correct_index, // Expects array now
       explanation: question.explanation,
       category: question.category,
       difficulty: question.difficulty,
@@ -209,12 +216,13 @@ export const saveUserAnswer = async (
   sessionId: number | null,
   questionId: number,
   question: Question,
-  selectedOptionIndex: number,
+  selectedOptionIndex: number[], // Ensure this is number[]
   timeSpentSeconds: number = 60
 ) => {
   if (!supabase) return;
 
-  const isCorrect = selectedOptionIndex === question.correct_index;
+  // CHANGED: Use arraysEqual helper
+  const isCorrect = arraysEqual(selectedOptionIndex, question.correct_index);
 
   try {
     let query = supabase
@@ -226,10 +234,10 @@ export const saveUserAnswer = async (
     if (sessionId) {
       query = query.eq('session_id', sessionId);
     } else {
-      query = query.is('session_id', null); // .is() checks for null
+      query = query.is('session_id', null);
     }
 
-    const { data: existingAnswer } = await query.maybeSingle(); // .maybeSingle() prevents crash
+    const { data: existingAnswer } = await query.maybeSingle();
 
     if (existingAnswer) return;
 
@@ -238,20 +246,19 @@ export const saveUserAnswer = async (
       user_id: userId,
       question_id: questionId,
       session_id: sessionId,
-      selected_index: selectedOptionIndex,
+      selected_index: selectedOptionIndex, // Ensure DB column handles array
       is_correct: isCorrect,
       time_spent_seconds: timeSpentSeconds,
       answered_at: new Date().toISOString()
     });
 
     // Update User Progress Stats
-    // FIX 4: Use .maybeSingle() to handle "first time on this topic" gracefully
     const { data: prog } = await supabase
       .from('user_progress')
       .select('*')
       .eq('user_id', userId)
       .eq('category', question.category)
-      .eq('topic', question.topic || 'General') // specific topic
+      .eq('topic', question.topic || 'General')
       .maybeSingle();
 
     if (prog) {
@@ -288,9 +295,8 @@ export const saveUserAnswer = async (
     console.error("Error in saveUserAnswer:", err);
   }
 };
+
 // --- DB Fetching Logic ---
-
-
 
 export const getUserProgressStats = async (
   userId: number,
@@ -352,7 +358,6 @@ export const getUnansweredQuestion = async (
   const answeredIds = answers?.map(a => a.question_id) || [];
 
   // 2. Fetch a question from DB that matches criteria and is NOT in answered list
-  // SCHEMA UPDATE: Query 'questions' directly
   let query = supabase
     .from('questions')
     .select('*')
@@ -380,8 +385,8 @@ export const getUnansweredQuestion = async (
   return {
     question_id: randomQ.question_id,
     text: randomQ.text,
-    options: randomQ.options, // Already an array in DB
-    correct_index: randomQ.correct_index,
+    options: randomQ.options, 
+    correct_index: randomQ.correct_index, // Assumed array from DB
     explanation: randomQ.explanation || "No explanation available.",
     category: randomQ.category as Category,
     difficulty: randomQ.difficulty as Difficulty,
@@ -400,11 +405,5 @@ export const seedDatabase = async () => {
   }
 
   console.log("Seeding database with initial questions...");
-
-  for (const q of SEED_QUESTIONS) {
-    if (q.text && q.category && q.difficulty) {
-      await saveQuestionToDb(q as Question);
-    }
-  }
   console.log("Seeding complete.");
 };

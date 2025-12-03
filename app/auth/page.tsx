@@ -3,10 +3,9 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthPage } from '@/views/AuthPage';
-import { AppProvider } from '../providers';
 import { AppLayout } from '../app-layout';
 
-const AuthPageWrapper: React.FC = () => {
+export default function Auth() {
   const router = useRouter();
 
   return (
@@ -16,13 +15,5 @@ const AuthPageWrapper: React.FC = () => {
         onCancel={() => router.push('/')}
       />
     </AppLayout>
-  );
-};
-
-export default function Auth() {
-  return (
-    <AppProvider>
-      <AuthPageWrapper />
-    </AppProvider>
   );
 }

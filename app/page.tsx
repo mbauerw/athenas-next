@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { Dashboard } from '@/views/Dashboard';
-import { AppProvider, useAppContext } from './providers';
+import { useAppContext } from './providers';
 import { AppLayout } from './app-layout';
 
-const DashboardPage: React.FC = () => {
+export default function Home() {
   const { authUser, progress, userStats, startPractice } = useAppContext();
 
   return (
@@ -17,13 +17,5 @@ const DashboardPage: React.FC = () => {
         onStartPractice={startPractice}
       />
     </AppLayout>
-  );
-};
-
-export default function Home() {
-  return (
-    <AppProvider>
-      <DashboardPage />
-    </AppProvider>
   );
 }

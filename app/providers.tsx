@@ -17,6 +17,15 @@ import {
 } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
 
+// --- Helper for Array Comparison ---
+const arraysEqual = (a: number[], b: number[]) => {
+  if (a.length !== b.length) return false;
+  // Sort to ensure order doesn't matter (e.g. [0,1] vs [1,0])
+  const sortedA = [...a].sort((x, y) => x - y);
+  const sortedB = [...b].sort((x, y) => x - y);
+  return sortedA.every((val, index) => val === sortedB[index]);
+};
+
 // --- Initial State ---
 const initialProgress: UserProgress = {
   verbal: { easy: 0, medium: 0, hard: 0 },
@@ -38,7 +47,7 @@ interface AppContextType {
   dbConnected: boolean;
   userStats: UserProgressStats | null;
   startPractice: (category: Category, difficulty: Difficulty) => Promise<void>;
-  handleQuestionComplete: (selectedIndex: number) => Promise<void>;
+  handleQuestionComplete: (selectedIndices: number[]) => Promise<void>; // CHANGED: accepts number[]
   fetchNewQuestion: (category: Category, difficulty: Difficulty) => Promise<void>;
   returnToDashboard: () => void;
   handleSignOut: () => Promise<void>;
@@ -177,7 +186,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const handleQuestionComplete = async (selectedIndex: number) => {
+  const handleQuestionComplete = async (selectedIndices: number[]) => { // CHANGED: now array
     if (!selectedCategory || !selectedDifficulty || !currentQuestion) return;
 
     if (loading) return;
@@ -187,12 +196,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // 3. Snapshot Data
     const questionToSave = currentQuestion;
     const qId = questionToSave.question_id;
-    const isCorrect = selectedIndex === questionToSave.correct_index;
+    
+    // CHANGED: Use arraysEqual helper
+    const isCorrect = arraysEqual(selectedIndices, questionToSave.correct_index);
 
     try {
       if (userId && dbConnected && qId) {
         console.log("Saving User Answer");
-        await saveUserAnswer(userId, sessionId, qId, questionToSave, selectedIndex);
+        await saveUserAnswer(userId, sessionId, qId, questionToSave, selectedIndices);
         const total = await getUserProgressStats(userId);
         setUserStats(total);
       }

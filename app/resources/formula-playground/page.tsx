@@ -2,21 +2,12 @@
 
 import React from 'react';
 import { FormulaPlayground } from '@/views/FormulaPlayground';
-import { AppProvider } from '../../providers';
 import { AppLayout } from '../../app-layout';
 
-const FormulaPlaygroundPage: React.FC = () => {
+export default function FormulaPlaygroundRoute() {
   return (
     <AppLayout>
       <FormulaPlayground />
     </AppLayout>
-  );
-};
-
-export default function FormulaPlaygroundRoute() {
-  return (
-    <AppProvider>
-      <FormulaPlaygroundPage />
-    </AppProvider>
   );
 }
