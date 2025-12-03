@@ -1,6 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Crimson Text", serif;
+  --font-sans: "Lato", sans-serif;
+  
+  --color-library-wood: #4a3728;
+  --color-library-woodLight: #8c6b4a;
+  --color-library-paper: #fdfbf7;
+  --color-library-paperDark: #f0ece2;
+  --color-library-green: #2f4f2f;
+  --color-library-gold: #d4af37;
+  --color-library-ink: #2b2b2b;
+}
+
 
 body {
   background-color: #fdfbf7;
