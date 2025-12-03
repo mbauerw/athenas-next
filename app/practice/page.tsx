@@ -2,10 +2,10 @@
 
 import React, { useEffect } from 'react';
 import { QuestionPage } from '@/views/QuestionPage';
-import { AppProvider, useAppContext } from '../providers';
+import { useAppContext } from '../providers';
 import { AppLayout } from '../app-layout';
 
-const PracticePage: React.FC = () => {
+export default function Practice() {
   const {
     loading,
     error,
@@ -40,13 +40,5 @@ const PracticePage: React.FC = () => {
         onRetry={() => selectedCategory && selectedDifficulty && fetchNewQuestion(selectedCategory, selectedDifficulty)}
       />
     </AppLayout>
-  );
-};
-
-export default function Practice() {
-  return (
-    <AppProvider>
-      <PracticePage />
-    </AppProvider>
   );
 }

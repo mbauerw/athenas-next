@@ -1,10 +1,7 @@
-import type { Metadata } from 'next';
-import './globals.css';
+'use client';
 
-export const metadata: Metadata = {
-  title: "Athena's GRE Library",
-  description: 'GRE Prep Archives - AI-powered question generation and practice',
-};
+import './globals.css';
+import { AppProvider } from './providers';
 
 export default function RootLayout({
   children,
@@ -18,9 +15,13 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap"
           rel="stylesheet"
         />
+        <title>Athena's GRE Library</title>
+        <meta name="description" content="GRE Prep Archives - AI-powered question generation and practice" />
       </head>
       <body className="font-sans antialiased">
-        {children}
+        <AppProvider>
+          {children}
+        </AppProvider>
       </body>
     </html>
   );
