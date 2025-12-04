@@ -2,19 +2,21 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthPage } from '@/views/AuthPage';
+import { AuthScreen } from '@/components/AuthScreen';
 import { AppProvider } from '../providers';
 import { AppLayout } from '../app-layout';
 
-const AuthPageWrapper: React.FC = () => {
+const AuthPageContent: React.FC = () => {
   const router = useRouter();
 
   return (
     <AppLayout>
-      <AuthPage
-        onSuccess={() => router.push('/')}
-        onCancel={() => router.push('/')}
-      />
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <AuthScreen
+          onSuccess={() => router.push('/')}
+          onCancel={() => router.push('/')}
+        />
+      </div>
     </AppLayout>
   );
 };
@@ -22,7 +24,7 @@ const AuthPageWrapper: React.FC = () => {
 export default function Auth() {
   return (
     <AppProvider>
-      <AuthPageWrapper />
+      <AuthPageContent />
     </AppProvider>
   );
 }

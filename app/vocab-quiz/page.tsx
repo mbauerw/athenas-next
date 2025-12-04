@@ -1,29 +1,28 @@
 'use client';
 
 import React from 'react';
-import MathCalculators from '@/components/MathCalculators';
-import { AppProvider } from '../../providers';
-import { AppLayout } from '../../app-layout';
+import { AppProvider } from '../providers';
+import { AppLayout } from '../app-layout';
 
-const FormulaPlaygroundPage: React.FC = () => {
+const VocabQuizPage: React.FC = () => {
   return (
     <AppLayout>
       <div className="min-h-[60vh] flex flex-col items-center justify-center">
         <div className='flex items-center justify-center p-10 mb-4'>
           <h1 className='text-6xl text-center font-semibold'>
-            Formula Playground
+            Vocabulary Quiz
           </h1>
         </div>
-        <MathCalculators />
+        <p className="text-gray-600 text-lg">Coming soon...</p>
       </div>
     </AppLayout>
   );
 };
 
-export default function FormulaPlaygroundRoute() {
+export default function VocabQuiz() {
   return (
     <AppProvider>
-      <FormulaPlaygroundPage />
+      <VocabQuizPage />
     </AppProvider>
   );
 }
