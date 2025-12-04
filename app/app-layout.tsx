@@ -22,7 +22,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         <div className="max-w-md text-center p-8 border-2 border-library-wood rounded-lg bg-white shadow-xl">
           <AlertTriangle className="mx-auto text-amber-600 mb-4" size={48} />
           <h1 className="text-2xl font-serif font-bold text-library-wood mb-2">Missing Library Access Key</h1>
-          <p className="text-library-ink mb-4">
+          <p className="text-library-ink mb-5">
             The Librarian requires an API Key to access the archives. Please ensure <code>process.env.API_KEY</code> is set in your environment.
           </p>
         </div>
