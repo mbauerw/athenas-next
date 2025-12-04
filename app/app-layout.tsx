@@ -33,17 +33,17 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   return (
     <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
       <div
-        className="absolute top-0 left-0 right-0 h-[100vh] pointer-events-none z-0 bg-cover bg-top bg-no-repeat"
+        className="absolute top-0 left-0 right-0 h-[120vh] pointer-events-none z-0 bg-cover bg-top bg-no-repeat"
         style={{
           backgroundImage: "url('/library-athena.png')",
-          maskImage: 'radial-gradient(ellipse 70% 150% at 50% 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 100% at 50% 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
+          maskImage: 'radial-gradient(ellipse 70% 140% at 50% 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 140% at 50% 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
         }}
       />
       <div
         className="absolute top-0 left-0 right-0 h-[100vh] pointer-events-none z-10"
         style={{
-          background: 'radial-gradient(circle 35vw at 50% 15%, rgb(69, 106, 254) 0%, rgba(47, 65, 226, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'        }}
+          background: 'radial-gradient(circle 35vw at 50% 15%, rgb(2, 43, 209) 0%, rgba(37, 55, 223, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'        }}
       />
 
       {/* --- Navigation / Header --- */}

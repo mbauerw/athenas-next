@@ -44,12 +44,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, progress, userSt
   return (
     <div className="animate-fade-in relative">
       {/* --- Background Images --- */}
-      <div
-        className='absolute inset-0 pointer-events-none z-10'
-      // style={{ backgroundImage: "url('/library-classic.jpeg')" }}
-      >
-
-
+      <div className='absolute inset-0 pointer-events-none z-10'>
         <motion.div
           className="absolute top-2/5 -left-[12vw]"
           {...floatingAnimationSlow}
@@ -76,17 +71,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, progress, userSt
 
       {/* --- Content --- */}
       <div className="relative z-10">
-        {/* <div className="text-center mb-12 pt-8">
-          <div className="inline-block bg-library-paper/80 backdrop-blur-sm p-6 rounded-lg shadow-sm border border-library-wood/10">
-            <h2 className="text-4xl font-serif font-bold text-library-wood mb-4">
-              Welcome, {authUser ? (authUser.user_metadata.first_name || 'Scholar') : 'Guest Scholar'}.
-            </h2>
-            <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
-              The archives contain 300 adaptive questions.
-              {authUser ? " Your progress is being recorded in the university registry." : " Sign in to permanently save your progress across sessions."}
-            </p>
-          </div>
-        </div> */}
 
         <motion.div
           initial={{ x: 100, opacity: 0 }}
@@ -100,38 +84,65 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, progress, userSt
             delay: 0,
             ease: [0.25, 0.4, 0.25, 1]
           }}
-          className="text-center h-50 mb-20 mt-20 flex flex-col justify-start items-center">
+          className="text-center h-50 mb-10 mt-20 flex flex-col justify-start items-center">
           <h3 className="text-6xl font-bold text-library-paper font-serif mb-2">Welcome To Athena's Library</h3>
           <p className="text-gray-300  text-xl text-wrap text-center">
             Home of the Premier Agentic GRE Tutor, "The Librarian"
           </p>
         </motion.div>
 
-        <div>
-            <motion.div
-              initial={{ x: -100, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
-              viewport={{
-                once: false,
-                amount: .5
-              }}
-              transition={{
-                duration: 1.5,
-                delay: 0,
-                ease: [0.25, 0.4, 0.25, 1]
-              }}
-              className="text-center h-50 mb-[400px] mt-20 flex flex-col justify-start items-start">
-              <h3 className="text-6xl font-bold text-library-paper font-serif mb-2">Welcome To Athena's Library</h3>
-              <p className="text-gray-300  text-xl text-wrap text-center">
-                Home of the Premier Agentic GRE Tutor, "The Librarian"
-              </p>
-            </motion.div>
+        {/* WRAPPER: Matches the max-w-5xl of the grid below to ensure left-alignment consistency */}
+        <div className="max-w-5xl w-full px-4 md:px-0 mt-20 mb-20">
+          <motion.div
+            // UPDATED: Removed 'mx-auto', added 'mr-auto' (optional redundancy), kept width logic
+            className="w-full md:w-3/5 flex items-start mr-auto h-[500px] min-h-[500px]"
+            style={{
+              borderRadius: '2rem',
+              background: 'rgba(28, 46, 90, 0.6)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
+          >
+            <div className=" flex min-h-full  px-6  h-full text-center items-center h-full flex flex-col justify-around items-center gap-6"
+            >
+              <div className='flex justify-start items-start'>
+                <h3 className="text-5xl font-bold text-center items-center text-library-paper font-serif h-1/3">
+                  Build the Perfect Roadmap
+                </h3>
 
-          </div>
+              </div>
+              <motion.div
+                // UPDATED: Removed 'mx-auto', added 'mr-auto' (optional redundancy), kept width logic
+                className="w-full md:w-3/5 flex items-start mr-auto h-1/2 min-h-1/2 p-4"
+                style={{
+                  borderRadius: '2rem',
+                  background: 'rgba(3, 3, 4, 0.34)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(0, 0, 0, 0.44)',
+                }}
+                initial={{ opacity: 0, y: 200 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 2 }}
+              >
+                  <p className=" text-gray-100 max-w-[500px] text-xl text-center leading-relaxed">
+                  Develop bespoke learning plans to ensure you hit your GRE goals. Utilize
+                  performance data to pin point areas for improvement and maintain
+                  realistic study paths based on your timeline.
+                </p>
+              </motion.div>
+
+              
+
+            </div>
+          </motion.div>
+        </div>
+
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          
-
           {/* Verbal Section */}
           <div className="bg-white p-8 rounded-lg shadow-lg border-t-8 border-amber-700">
             <div className="flex items-center gap-4 mb-6">
@@ -261,7 +272,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, progress, userSt
           </div>
 
         </div>
-        {/* <MathCalculators /> */}
       </div>
       <div>
 
