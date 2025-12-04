@@ -32,7 +32,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
   return (
     <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
-      <div
+      {/* <div
         className="absolute top-0 left-0 right-0 h-[120vh] pointer-events-none z-0 bg-cover bg-top bg-no-repeat"
         style={{
           backgroundImage: "url('/library-athena.png')",
@@ -44,7 +44,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         className="absolute top-0 left-0 right-0 h-[100vh] pointer-events-none z-10"
         style={{
           background: 'radial-gradient(circle 35vw at 50% 15%, rgb(2, 43, 209) 0%, rgba(37, 55, 223, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'        }}
-      />
+      /> */}
 
       {/* --- Navigation / Header --- */}
       <header className="bg-library-wood text-white shadow-lg sticky top-0 z-50 border-b-4 border-library-gold relative">

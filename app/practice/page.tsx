@@ -28,9 +28,9 @@ export default function Practice() {
 
   return (
     <AppLayout>
-      <div className="h-full flex flex-col justify-center items-center pb-20">
+      <div className="h-full flex flex-col justify-center items-center py-10">
         {loading ? (
-          <div className="text-center animate-pulse">
+          <div className="text-center animate-pulse mt-10">
             <div className="inline-block p-6 rounded-full bg-white shadow-xl border-4 border-library-wood mb-6">
               <RefreshCw className="animate-spin text-library-wood" size={48} />
             </div>
