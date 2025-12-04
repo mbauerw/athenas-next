@@ -67,6 +67,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, progress, userSt
           />
         </motion.div>
       </div>
+    
+      <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-screen h-[130vh] pointer-events-none z-0">
+
+        {/* Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-top bg-no-repeat"
+          style={{
+            backgroundImage: "url('/library-athena.png')",
+            // Mask to fade bottom
+            maskImage: 'radial-gradient(ellipse 70% 140% at 50% 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 70% 140% at 50% 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
+          }}
+        />
+
+        {/* Blue Glow Layer */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(circle 35vw at 50% 15%, rgb(2, 43, 209) 0%, rgba(37, 55, 223, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'
+          }}
+        />
+      </div>
+
 
 
       {/* --- Content --- */}
@@ -127,14 +150,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ authUser, progress, userSt
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 2 }}
               >
-                  <p className=" text-gray-100 max-w-[500px] text-xl text-center leading-relaxed">
-                  Develop bespoke learning plans to ensure you hit your GRE goals. Utilize
-                  performance data to pin point areas for improvement and maintain
-                  realistic study paths based on your timeline.
+                <p className=" text-gray-100 max-w-[500px] text-xl text-center leading-relaxed">
+                  Custom learning plans tailored to your needs. Get continuous feedback on your progress to maximize your potential. 
                 </p>
               </motion.div>
 
-              
+
 
             </div>
           </motion.div>
