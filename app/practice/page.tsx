@@ -28,7 +28,7 @@ export default function Practice() {
 
   return (
     <AppLayout>
-      <div className="h-full flex flex-col justify-center items-center py-10">
+      <div className="h-full flex flex-col bg-white justify-center items-center py-30 border-t-4 border-library-gold">
         {loading ? (
           <div className="text-center animate-pulse mt-10">
             <div className="inline-block p-6 rounded-full bg-white shadow-xl border-4 border-library-wood mb-6">

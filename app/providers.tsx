@@ -13,7 +13,7 @@ import {
   syncAuthUser,
   getUserProgressStats,
   seedDatabase,
-  getSession
+  getCurrentUser
 } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
 
@@ -141,7 +141,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (userId && dbConnected) {
       console.log("userId && dbConnected start practice");
-      const sid = await getSession();
+      const sid = await getCurrentUser();
       if (!sid) {
         console.log("No supaSession");
         const sid2 = await startSession(userId, category);

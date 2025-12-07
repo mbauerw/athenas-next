@@ -31,29 +31,36 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   }
 
   return (
-    <div className="min-h-screen bg-library-paper flex flex-col font-sans text-library-ink relative">
-      {/* <div
-        className="absolute top-0 left-0 right-0 h-[120vh] pointer-events-none z-0 bg-cover bg-top bg-no-repeat"
-        style={{
-          backgroundImage: "url('/library-athena.png')",
-          maskImage: 'radial-gradient(ellipse 70% 140% at 50% 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 140% at 50% 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
-        }}
-      />
-      <div
-        className="absolute top-0 left-0 right-0 h-[100vh] pointer-events-none z-10"
-        style={{
-          background: 'radial-gradient(circle 35vw at 50% 15%, rgb(2, 43, 209) 0%, rgba(37, 55, 223, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'        }}
-      /> */}
+    <div className="min-h-screen bg-library-paper flex flex-col items-center font-sans text-library-ink relative">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen h-[130vh] pointer-events-none z-0">
 
+        {/* Image Layer */}
+        <div
+          className="absolute inset-0 bg-cover bg-top bg-no-repeat"
+          style={{
+            backgroundImage: "url('/library-athena.png')",
+            // Mask to fade bottom
+            maskImage: 'radial-gradient(ellipse 70% 140% at 50% 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 70% 140% at 50% 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
+          }}
+        />
+
+        {/* Blue Glow Layer */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(circle max(65vw, 400px) at 50% -30%, rgb(2, 43, 209) 0%, rgba(37, 55, 223, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'
+          }}
+        />
+      </div>
       {/* --- Navigation / Header --- */}
-      <header className="bg-library-wood text-white shadow-lg sticky top-0 z-50 border-b-4 border-library-gold relative">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="bg-transparent text-white h-30 top-0 z-50 w-full  relative">
+        <div className="container mx-auto px-4 py-4 h-full flex justify-between items-center">
           <div
             className="flex items-center gap-3 cursor-pointer"
             onClick={returnToDashboard}
           >
-            <div className="bg-white p-2 rounded-full text-library-wood shadow-inner">
+            <div className="bg-white p-2 rounded-full text-library-wood">
               <Library size={24} />
             </div>
             <div>
@@ -92,7 +99,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       </header>
 
       {/* --- Main Content --- */}
-      <main className="flex-grow container  mx-auto px-4 pb-0 relative"
+      <main className="flex flex-col w-full pb-0 relative "
       >
 
         {children}

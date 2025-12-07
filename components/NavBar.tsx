@@ -46,7 +46,7 @@ export const NavBar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-transparent border-t border-library-wood/30 relative z-40">
+    <nav className="bg-transparent relative z-40">
       <div className="container mx-auto px-4">
         {/* Top Level Links */}
         <ul className="flex items-center gap-8">
@@ -55,7 +55,7 @@ export const NavBar: React.FC = () => {
               <button
                 onClick={() => toggleMenu(section)}
                 className={`
-                  flex items-center gap-1 py-3 px-2 text-sm font-bold tracking-wide uppercase transition-colors border-b-4
+                  flex items-center gap-1 py-3 cursor-pointer px-2 text-sm font-bold tracking-wide uppercase transition-colors border-b-4
                   ${activeMenu === section 
                     ? 'text-white border-library-gold bg-library-wood/20' 
                     : 'text-library-paper/90 border-transparent hover:text-white hover:bg-library-wood/10'

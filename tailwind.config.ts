@@ -21,6 +21,7 @@ const config: Config = {
           paperDark: '#f0ece2',
           green: '#2f4f2f',
           gold: '#d4af37',
+          goldDark: '#b39204',
           ink: '#2b2b2b',
         },
       },

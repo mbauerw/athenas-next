@@ -9,6 +9,7 @@ import { ProgressBar } from '../components/ProgressBar';
 import ProgressStats from '../components/ProgressStats';
 import { useAppContext } from './providers';
 import { AppLayout } from './app-layout';
+import Image from 'next/image';
 
 const floatingAnimationSlow = {
   animate: {
@@ -43,7 +44,7 @@ export default function Home() {
         {/* --- Background Images --- */}
         <div className='absolute inset-0 pointer-events-none z-10'>
           <motion.div
-            className="absolute top-2/5 -left-[12vw]"
+            className="absolute top-[62%] left-10"
             {...floatingAnimationSlow}
           >
             <img
@@ -54,7 +55,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            className="absolute top-[46%] -right-[10%]"
+            className="absolute top-[65%] right-10"
             {...floatingAnimationGentle}
           >
             <img
@@ -65,9 +66,10 @@ export default function Home() {
           </motion.div>
         </div>
 
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-screen h-[130vh] pointer-events-none z-0">
+        {/* Background athena image */}
 
-          {/* Image Layer */}
+        {/* <div className="absolute top-0 left-1/2 -translate-x-1/2 w-screen h-[130vh] pointer-events-none z-0">
+
           <div
             className="absolute inset-0 bg-cover bg-top bg-no-repeat"
             style={{
@@ -78,14 +80,13 @@ export default function Home() {
             }}
           />
 
-          {/* Blue Glow Layer */}
           <div
             className="absolute inset-0"
             style={{
-              background: 'radial-gradient(circle 35vw at 50% 15%, rgb(2, 43, 209) 0%, rgba(37, 55, 223, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'
+              background: 'radial-gradient(circle max(35vw, 400px) at 50% 10%, rgb(2, 43, 209) 0%, rgba(37, 55, 223, 0.78) 70%, rgba(105, 88, 255, 0) 100%)'
             }}
           />
-        </div>
+        </div> */}
 
 
 
@@ -104,57 +105,68 @@ export default function Home() {
               delay: 0,
               ease: [0.25, 0.4, 0.25, 1]
             }}
-            className="text-center h-50 mb-10 mt-20 flex flex-col justify-start items-center">
+            className="text-center h-100 mb-10 mt-20 flex flex-col justify-start items-center py-0">
             <h3 className="text-6xl font-bold text-library-paper font-serif mb-2">Welcome To Athena's Library</h3>
             <p className="text-gray-300  text-xl text-wrap text-center">
               Home of the Premier Agentic GRE Tutor, "The Librarian"
             </p>
           </motion.div>
 
-          {/* WRAPPER: Matches the max-w-5xl of the grid below to ensure left-alignment consistency */}
-          <div className="max-w-5xl w-full px-4 md:px-0 mt-20 mb-20">
+          <div className="grid md:grid-cols-2 md:grid-rows-2 grid-cols-1 place-items-center max-w-full h-[1100px] w-full px-4 md:px-0 mt-[200px] mb-20">
+            {/* LEFT COLUMN ITEM */}
             <motion.div
-              // UPDATED: Removed 'mx-auto', added 'mr-auto' (optional redundancy), kept width logic
-              className="w-full md:w-3/5 flex items-start mr-auto h-[500px] min-h-[500px]"
+              className="flex items-center justify-center h-[500px] min-h-[500px] w-[600px] min-w-[500px]"
               style={{
                 borderRadius: '2rem',
-                background: 'rgba(28, 46, 90, 0.6)',
                 backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -150 }}
+              whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 1 }}
             >
-              <div className=" flex min-h-full  px-6  h-full text-center items-center h-full flex flex-col justify-around items-center gap-6"
-              >
-                <div className='flex justify-start items-start'>
-                  <h3 className="text-5xl font-bold text-center items-center text-library-paper font-serif h-1/3">
-                    Build the Perfect Roadmap
-                  </h3>
+              <Image
+                src="/chat-blurb.png"
+                alt="Description of my image"
+                fill
+                style={{ objectFit: 'contain' }}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+            </motion.div>
 
-                </div>
-                <motion.div
-                  // UPDATED: Removed 'mx-auto', added 'mr-auto' (optional redundancy), kept width logic
-                  className="w-full md:w-3/5 flex items-start mr-auto h-1/2 min-h-1/2 p-4"
-                  style={{
-                    borderRadius: '2rem',
-                    background: 'rgba(3, 3, 4, 0.34)',
-                    backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(0, 0, 0, 0.44)',
-                  }}
-                  initial={{ opacity: 0, y: 200 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 2 }}
-                >
-                  <p className=" text-gray-100 max-w-[500px] text-xl text-center leading-relaxed">
-                    Custom learning plans tailored to your needs. Get continuous feedback on your progress to maximize your potential.
-                  </p>
-                </motion.div>
-
-
-
+            <motion.div
+              className='flex justify-center items-center'
+              initial={{ opacity: 0, x: 150 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0 }}>
+              <div>
+                <p className='text-6xl  font-roboto'> A Tutor that is <br /> Always Available </p>
               </div>
+            </motion.div>
+
+            <div className='flex justify-center items-center'>
+              <div>
+                <p className='text-6xl  font-roboto text-wrap text-center'> Maximize your <br /> Potential </p>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN ITEM */}
+            <motion.div
+              className="flex items-center justify-center h-[500px] min-h-[500px] w-[600px] min-w-[500px]"
+              style={{
+                borderRadius: '2rem',
+                backdropFilter: 'blur(12px)',
+              }}
+              initial={{ opacity: 0, x: 150 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 1 }}
+            >
+              <Image
+                src="/roadmap-blurb.png"
+                alt="Description of my image"
+                fill
+                style={{ objectFit: 'contain' }}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
             </motion.div>
           </div>
 
@@ -235,10 +247,10 @@ export default function Home() {
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <Button onClick={() => startPractice(Category.QUANT, Difficulty.EASY)} className="text-sm">
+                <Button onClick={() => { startPractice(Category.QUANT, Difficulty.EASY); console.log("Starting easy") }} className="text-sm">
                   Practice Easy
                 </Button>
-                <Button onClick={() => startPractice(Category.QUANT, Difficulty.MEDIUM)} className="text-sm">
+                <Button onClick={() => { startPractice(Category.QUANT, Difficulty.MEDIUM); console.log("Starting medium practice") }} className="text-sm">
                   Practice Medium
                 </Button>
                 <Button onClick={() => startPractice(Category.QUANT, Difficulty.HARD)} className="text-sm">
